@@ -276,10 +276,19 @@ function loadRemote(){
     document.head.appendChild(s);
   });
 }
+function loadLocal(){
+  if(hasWS){/* handled async below */}
+  try{const v=localStorage.getItem(KEY);if(v)return JSON.parse(v);}catch(e){}
+  return null;
+}
 async function load(){
-  if(API){try{const d=await loadRemote();if(d&&d.state)state=d.state;}catch(e){console.warn("load failed",e);}}
-  else if(hasWS){try{const r=await window.storage.get(KEY);if(r&&r.value)state=JSON.parse(r.value);}catch(e){}}
-  else{try{const v=localStorage.getItem(KEY);if(v)state=JSON.parse(v);}catch(e){}}
+  let got=false;
+  /* 1) shared backend (best effort) */
+  if(API){try{const d=await loadRemote();if(d&&d.state){state=d.state;got=true;}}catch(e){}}
+  /* 2) claude.ai artifact storage */
+  if(!got&&hasWS){try{const r=await window.storage.get(KEY);if(r&&r.value){state=JSON.parse(r.value);got=true;}}catch(e){}}
+  /* 3) localStorage — always available fallback so data is never lost */
+  if(!got){const v=loadLocal();if(v){state=v;got=true;}}
   if(!state.members)state.members=DEFAULT_MEMBERS;
   if(!state.prayers)state.prayers=DEFAULT_PRAYERS;
   if(!state.goals)state.goals=DEFAULT_GOALS;
@@ -291,13 +300,17 @@ async function load(){
 }
 let saveTimer=null;
 async function save(){
-  if(!API&&hasWS){try{await window.storage.set(KEY,JSON.stringify(state));}catch(e){}return;}
-  if(!API){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}return;}
-  /* remote: fire-and-forget GET (no-cors), debounced so taps don't spam the sheet */
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>{
-    fetch(API+"?action=save&data="+encodeURIComponent(JSON.stringify(state)),{mode:"no-cors"}).catch(e=>console.warn("save failed",e));
-  },600);
+  const blob=JSON.stringify(state);
+  /* ALWAYS cache locally so a flaky backend never loses data */
+  try{localStorage.setItem(KEY,blob);}catch(e){}
+  if(hasWS){try{await window.storage.set(KEY,blob);}catch(e){}}
+  /* shared backend: fire-and-forget GET (no-cors), debounced so taps don't spam the sheet */
+  if(API){
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>{
+      fetch(API+"?action=save&data="+encodeURIComponent(blob),{mode:"no-cors"}).catch(e=>{});
+    },600);
+  }
 }
 const $=s=>document.querySelector(s);
 
