@@ -1,0 +1,510 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Our Family Faith Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --parchment:#FBF7EF; --card:#FFFDF8; --ink:#38282C; --muted:#8A7A72;
+    --lapis:#2E5EAA; --garnet:#9C2B3B; --gold:#C99A3B; --gold-soft:#EFD9A6;
+    --sage:#5F7150; --line:#E9E0D0;
+    --shadow:0 2px 0 rgba(56,40,44,.05), 0 14px 34px -18px rgba(56,40,44,.4);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--parchment);color:var(--ink);
+    font-family:'Baloo 2',system-ui,sans-serif;line-height:1.45;
+    background-image:radial-gradient(circle at 12% 8%, rgba(201,154,59,.06), transparent 40%),
+                     radial-gradient(circle at 88% 92%, rgba(46,94,170,.05), transparent 42%);}
+  .wrap{max-width:1060px;margin:0 auto;padding:20px 16px 90px}
+
+  header{position:relative;border-radius:22px;overflow:hidden;color:#fff;padding:24px 24px 22px;box-shadow:var(--shadow);
+    background:linear-gradient(115deg,var(--lapis) 0%, #2b4f8f 46%, var(--garnet) 100%);}
+  header::after{content:"";position:absolute;inset:0;opacity:.16;mix-blend-mode:overlay;
+    background:repeating-linear-gradient(60deg,#fff 0 2px,transparent 2px 26px),repeating-linear-gradient(-60deg,#fff 0 2px,transparent 2px 26px);}
+  header .eyebrow{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;opacity:.85;position:relative}
+  header h1{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(1.9rem,5vw,3rem);margin:.1em 0;line-height:1;position:relative}
+  header .verse{position:relative;font-style:italic;opacity:.95;max-width:46ch;margin-top:6px;font-family:'Fraunces',serif}
+  header .date{position:relative;margin-top:8px;font-weight:700;font-size:.9rem;opacity:.9}
+  .soundbtn{position:absolute;top:16px;right:16px;z-index:2;background:rgba(255,255,255,.2);color:#fff;border:none;
+    width:40px;height:40px;border-radius:50%;font-size:1.1rem;cursor:pointer}
+
+  h2{font-family:'Fraunces',serif;font-weight:600;font-size:1.35rem;margin:30px 2px 12px;display:flex;align-items:center;gap:10px}
+  h2 .rule{flex:1;height:1px;background:var(--line)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:20px}
+
+  /* Devotional */
+  .dev{position:relative;overflow:hidden}
+  .dev .illum{float:left;font-family:'Fraunces',serif;font-weight:900;font-size:4.2rem;line-height:.8;color:var(--garnet);margin:2px 14px 0 0;text-shadow:1px 1px 0 var(--gold-soft)}
+  .dev .ref{font-weight:800;color:var(--lapis)}
+  .dev .scripture{font-family:'Fraunces',serif;font-size:1.12rem;margin:2px 0 12px}
+  .dev .qa{background:#FBF4E6;border:1px dashed var(--gold);border-radius:12px;padding:12px 14px;margin:0 0 10px}
+  .dev .qa b{color:var(--sage)}
+  .dev .pray{background:rgba(46,94,170,.06);border-left:3px solid var(--lapis);border-radius:0 10px 10px 0;padding:10px 14px}
+  .dev .pray b{color:var(--lapis)}
+  .dev-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+  button{font-family:inherit;font-weight:700;cursor:pointer;border-radius:999px;border:none;transition:transform .08s ease,filter .15s}
+  button:active{transform:translateY(1px)}
+  .btn{background:var(--lapis);color:#fff;padding:10px 18px}
+  .btn.ghost{background:transparent;color:var(--lapis);border:2px solid var(--lapis)}
+  .btn.gold{background:var(--gold);color:#3a2b12}
+  .btn:hover{filter:brightness(1.06)}
+  .btn.sm{padding:6px 14px;font-size:.9rem}
+
+  /* ---- DOJO family cards ---- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .member{position:relative;padding-top:16px;overflow:visible}
+  .member .top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .monster{width:60px;height:60px;flex:none;border-radius:22px 22px 20px 20px;position:relative;box-shadow:inset 0 -6px 0 rgba(0,0,0,.08)}
+  .monster::before,.monster::after{content:"";position:absolute;top:16px;width:16px;height:16px;background:#fff;border-radius:50%}
+  .monster::before{left:11px} .monster::after{right:11px}
+  .monster .pupils{position:absolute;top:22px;left:0;right:0;display:flex;justify-content:space-between;padding:0 15px}
+  .monster .pupils i{width:6px;height:6px;background:#241a1c;border-radius:50%;display:block}
+  .monster .horns{position:absolute;top:-7px;left:0;right:0;display:flex;justify-content:space-between;padding:0 9px}
+  .monster .horns i{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:12px solid inherit}
+  .member .name{font-weight:800;font-size:1.3rem}
+  .member .age{font-size:.8rem;color:var(--muted);font-weight:700}
+  .scorepop{margin-left:auto;text-align:center;position:relative}
+  .scorepop .num{font-family:'Fraunces',serif;font-weight:900;font-size:1.9rem;line-height:1;color:var(--gold)}
+  .scorepop .lbl{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800}
+
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+  .tile{display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 6px 10px;border-radius:14px;border:2px solid var(--line);
+    background:#fff;cursor:pointer;text-align:center;user-select:none;transition:transform .1s,border-color .15s,background .15s}
+  .tile:hover{transform:translateY(-2px)}
+  .tile .ico{font-size:1.8rem;line-height:1}
+  .tile .cap{font-size:.82rem;font-weight:700;color:var(--ink)}
+  .tile.done{background:#EAF3EA;border-color:var(--sage)}
+  .tile.done .ico{filter:none}
+  .tile .check{position:absolute}
+  .tile{position:relative}
+  .tile .badge{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;background:var(--sage);color:#fff;
+    display:none;place-items:center;font-size:.9rem;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+  .tile.done .badge{display:grid}
+
+  .flystar{position:fixed;pointer-events:none;font-size:1.6rem;z-index:99;animation:fly 1s ease-out forwards}
+  @keyframes fly{0%{opacity:1;transform:translateY(0) scale(.6)}30%{transform:translateY(-14px) scale(1.2)}100%{opacity:0;transform:translateY(-70px) scale(1)}}
+  @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.5)}100%{transform:scale(1)}}
+  .bumping{animation:bump .4s ease}
+
+  /* prayer + goals */
+  .two{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+  @media(max-width:760px){.two{grid-template-columns:1fr}.tiles{grid-template-columns:1fr 1fr}}
+  .pcard input{width:100%;font-family:inherit;border:2px solid var(--line);border-radius:12px;padding:11px 13px;font-size:1rem;margin-bottom:8px}
+  .plist{list-style:none;margin:6px 0 0;padding:0}
+  .plist li{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px dashed var(--line)}
+  .plist li:first-child{border-top:none}
+  .plist .txt{flex:1}
+  .plist li.answered .txt{color:var(--sage);font-style:italic}
+  .plist li.answered .txt::before{content:"✓ ";color:var(--gold);font-weight:800}
+  .goal{margin-top:12px}
+  .goal .glabel{display:flex;justify-content:space-between;font-weight:700;font-size:.95rem;margin-bottom:5px}
+  .bar{height:14px;border-radius:99px;background:#eee;overflow:hidden}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--sage),var(--gold));border-radius:99px;transition:width .35s}
+  .goal .gbtns{display:flex;gap:6px;margin-top:6px}
+  .gbtns button{background:#fff;border:2px solid var(--line);color:var(--ink);padding:2px 16px;font-size:1rem;border-radius:10px}
+  .del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;opacity:.5}
+  .del:hover{opacity:1;color:var(--garnet)}
+  .jar{margin-top:16px}
+  .jarhead{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+  .jartitle{font-family:'Fraunces',serif;font-weight:700;font-size:1.35rem}
+  .jarsub{color:var(--muted);font-weight:700;font-size:.9rem}
+  .jartrophy{margin-left:auto;font-weight:800;color:var(--gold);white-space:nowrap;font-size:.95rem}
+  .jarbar{position:relative;height:36px;border-radius:99px;background:#efe7d6;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,.08)}
+  .jarfill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:99px;transition:width .5s cubic-bezier(.4,1.4,.5,1);
+    background:linear-gradient(90deg,var(--sage),var(--gold));box-shadow:0 0 0 2px rgba(255,255,255,.4) inset}
+  .jarnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--ink);font-size:1rem;text-shadow:0 1px 0 rgba(255,255,255,.5)}
+  .jaractions{margin-top:10px}
+  .jarBanner{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;margin-top:12px;
+    background:linear-gradient(100deg,rgba(95,113,80,.14),rgba(201,154,59,.2));border:2px dashed var(--gold);
+    border-radius:14px;padding:12px 14px;font-weight:800;color:var(--sage)}
+  .confetti{position:fixed;top:-30px;z-index:120;pointer-events:none;animation:fall 2.4s ease-in forwards}
+  @keyframes fall{to{transform:translateY(108vh) rotate(360deg);opacity:.2}}
+  .empty{color:var(--muted);font-style:italic;padding:8px 0}
+  .footnote{text-align:center;color:var(--muted);font-size:.85rem;margin-top:34px}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  /* ---- Parent Mode ---- */
+  .gearbtn{right:64px;font-size:1rem}
+  .modal{position:fixed;inset:0;background:rgba(40,28,32,.55);display:grid;place-items:center;z-index:200;padding:16px}
+  .sheet{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:22px;max-width:340px;width:100%;text-align:center}
+  .sheet h3{font-family:'Fraunces',serif;margin:.1em 0;font-size:1.3rem;color:var(--ink)}
+  .sheet p{color:var(--muted);font-weight:600;margin:.2em 0 1em;font-size:.92rem}
+  .pindisp{font-size:1.6rem;height:1.8rem;margin-bottom:14px;color:var(--lapis);font-weight:800}
+  .pinpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .pinkey{background:#fff;border:2px solid var(--line);border-radius:14px;padding:16px 0;font-size:1.35rem;font-weight:800;color:var(--ink)}
+  .pinkey:hover{border-color:var(--lapis)}
+  .msg{color:var(--garnet);font-weight:700;min-height:1.2em;font-size:.85rem;margin-top:10px}
+  .mini{background:none;border:none;font-size:.9rem;cursor:pointer;padding:0 2px;vertical-align:1px}
+  .tile.edit{border-style:dashed}
+  .tiledel{position:absolute;top:-8px;left:-8px;width:24px;height:24px;border-radius:50%;background:var(--garnet);color:#fff;
+    display:grid;place-items:center;font-size:.8rem;box-shadow:0 2px 6px rgba(0,0,0,.25);z-index:3}
+  .addtile{border:2px dashed var(--lapis);color:var(--lapis);justify-content:center;background:rgba(46,94,170,.04)}
+  .addtile .ico,.addtile .cap{color:var(--lapis)}
+  .member.editing{outline:2px dashed var(--gold);outline-offset:3px}
+  .pmbanner{position:fixed;left:0;right:0;bottom:0;z-index:150;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;
+    background:linear-gradient(100deg,rgba(46,94,170,.96),rgba(156,43,59,.96));color:#fff;padding:12px 16px;font-weight:800;
+    box-shadow:0 -6px 20px -8px rgba(0,0,0,.4)}
+  .pmbanner .btn.gold{background:var(--gold)} .pmbanner .btn.ghost{border-color:#fff;color:#fff}
+</style>
+
+<div class="wrap">
+  <header>
+    <button class="soundbtn" id="sound" title="Sound on/off">🔊</button>
+    <button class="soundbtn gearbtn" id="gear" title="Parent settings">⚙️</button>
+    <div class="eyebrow">Walk together · Serve together · Grow together</div>
+    <h1>Our Family Faith Board</h1>
+    <div class="verse">"As for me and my house, we will serve the Lord." — Joshua 24:15</div>
+    <div class="date" id="today"></div>
+  </header>
+
+  <div class="card jar">
+    <div class="jarhead">
+      <div><div class="jartitle">🫙 Family Star Jar</div><div class="jarsub">Fill it to 100 stars for a family outing — ice cream &amp; a café! 🍦☕</div></div>
+      <div class="jartrophy" id="jarTrophy"></div>
+    </div>
+    <div class="jarbar"><i class="jarfill" id="jarFill"></i><span class="jarnum"><b id="jarCount">0</b> / 100 ⭐</span></div>
+    <div class="jaractions"><button class="btn ghost sm" id="newDayBtn">🌅 New day (keep our stars)</button></div>
+    <div class="jarBanner" id="jarBanner" style="display:none">
+      <span>🎉 We hit 100 stars! Family outing time — ice cream &amp; a café! 🍦☕</span>
+      <button class="btn gold sm" id="claimBtn">We did it! Start a new jar</button>
+    </div>
+  </div>
+
+  <h2>📖 Today's Devotional <span class="rule"></span></h2>
+  <div class="card dev" id="dev"></div>
+
+  <h2>🌟 Star Points — tap when you do a good thing! <span class="rule"></span></h2>
+  <div class="grid" id="family"></div>
+
+  <div class="two">
+    <div>
+      <h2>🙏 Prayer Wall <span class="rule"></span></h2>
+      <div class="card pcard">
+        <input id="prayerInput" placeholder="Add a prayer… (press Enter)">
+        <ul class="plist" id="prayers"></ul>
+      </div>
+    </div>
+    <div>
+      <h2>🏆 Family Goals <span class="rule"></span></h2>
+      <div class="card" id="goals"></div>
+    </div>
+  </div>
+
+  <p class="footnote">Tap a picture to earn a ⭐ · your board saves by itself · made together with AI</p>
+</div>
+
+<div class="modal" id="modal" style="display:none"><div class="sheet" id="sheet"></div></div>
+
+<script>
+/* ---------- devotionals ---------- */
+const DEVOS=[
+ {L:"O",ref:"Ephesians 6:1",scripture:"“Children, obey your parents in the Lord, for this is right.”",
+  reflect:"When we listen to Mummy and Daddy the first time, with a happy heart, we're showing love to God — He gave us our family to help us grow.",
+  q:"What is one way you can obey quickly and cheerfully today?",
+  pray:"Jesus, help me listen well and obey with a joyful heart. Thank You for my family."},
+ {L:"B",ref:"Ephesians 4:32",scripture:"“Be kind to one another, tender‑hearted, forgiving one another.”",
+  reflect:"Home is the best place to practise kindness — sharing, saying sorry, and forgiving fast. Kindness at home spills out everywhere.",
+  q:"Who can you be kind to before bedtime?",
+  pray:"Lord, give me a kind heart today. Help me forgive quickly, like You forgive me."},
+ {L:"G",ref:"Colossians 3:23",scripture:"“Whatever you do, work at it with all your heart, as working for the Lord.”",
+  reflect:"Even tidying up can be a gift to God when we do it with our whole heart and a happy attitude.",
+  q:"What job can you do so well it makes God smile?",
+  pray:"Father, help me do my part with all my heart, as if I'm doing it for You."},
+ {L:"H",ref:"Exodus 20:12",scripture:"“Honour your father and your mother.”",
+  reflect:"Honouring means treating someone as precious — with kind words, respect and trust. God loves it when families lift each other up.",
+  q:"What kind words can you say to your family right now?",
+  pray:"God, thank You for Mummy and Daddy. Help me honour them with my words and choices."},
+ {L:"L",ref:"1 John 4:7",scripture:"“Beloved, let us love one another, for love is from God.”",
+  reflect:"We don't make love on our own — it flows from God, into us, and out to each other. A loving family is a little picture of God's love.",
+  q:"How were you loved today, and how can you pass it on?",
+  pray:"Thank You God that Your love fills our home. Help our family love like You."},
+ {L:"T",ref:"1 Thessalonians 5:18",scripture:"“Give thanks in all circumstances.”",
+  reflect:"A thankful heart notices God's gifts everywhere — food, family, sunshine and second chances.",
+  q:"Name three things you're thankful for today.",
+  pray:"Thank You Jesus for all Your good gifts. Help our family have thankful hearts."},
+ {L:"A",ref:"Proverbs 17:17",scripture:"“A friend loves at all times.”",
+  reflect:"Brothers and sisters can be our very best friends — sticking together on good days and hard days.",
+  q:"How can you be a good friend to Grace, Alex or Charlotte this week?",
+  pray:"Lord, make our family close friends who love each other well."}
+];
+
+/* ---------- family (Dojo-style) ---------- */
+const DEFAULT_MEMBERS=[
+ {name:"Mummy",age:"",colour:"#9C2B3B",stars:0,tasks:[
+   {i:"📖",c:"Bible story",done:false},{i:"💛",c:"Praise good behaviour",done:false},
+   {i:"🙏",c:"Lead a prayer",done:false},{i:"📅",c:"Plan tomorrow",done:false}]},
+ {name:"Daddy",age:"",colour:"#2E5EAA",stars:0,tasks:[
+   {i:"🙏",c:"Family prayer",done:false},{i:"💬",c:"Encourage each child",done:false},
+   {i:"🧹",c:"Help at home",done:false},{i:"❤️",c:"Cuddle time",done:false}]},
+ {name:"Grace",age:"5",colour:"#7A5AA6",stars:0,tasks:[
+   {i:"🙏",c:"Say my prayer",done:false},{i:"👂",c:"Obey first time",done:false},
+   {i:"🧸",c:"Tidy my toys",done:false},{i:"💛",c:"Be kind",done:false},
+   {i:"🪥",c:"Brush teeth",done:false},{i:"🙏",c:"Say thank you",done:false}]},
+ {name:"Alex",age:"3",colour:"#2E8B72",stars:0,tasks:[
+   {i:"🙏",c:"Pray with me",done:false},{i:"🤝",c:"Share toys",done:false},
+   {i:"👟",c:"Shoes away",done:false},{i:"😊",c:"Say please",done:false}]},
+ {name:"Charlotte",age:"1",colour:"#E08D2E",stars:0,tasks:[
+   {i:"😊",c:"Big smiles",done:false},{i:"🤗",c:"Cuddles",done:false},
+   {i:"🍎",c:"Eat some lunch",done:false},{i:"😴",c:"Nap time",done:false}]}
+];
+const DEFAULT_PRAYERS=[{txt:"Thank You God for our family",answered:false}];
+const DEFAULT_GOALS=[
+ {name:"Read a Bible story together",done:3,target:7},
+ {name:"Family dinner, no screens",done:2,target:5},
+ {name:"Do a kind thing for someone",done:0,target:3}
+];
+
+/* ---------- state ---------- */
+let state={members:null,prayers:null,goals:null,devoIndex:0,custom:null,sound:true};
+const KEY="familyBoard_v2";
+/* ===== PASTE YOUR APPS SCRIPT WEB APP URL BELOW (ends in /exec) ===== */
+const API=""; /* e.g. "https://script.google.com/macros/s/AKfy.../exec" */
+/* =================================================================== */
+const hasWS=typeof window.storage!=="undefined";
+
+/* Cross-origin read via JSONP (Apps Script sends no CORS header, so fetch-read is blocked) */
+function loadRemote(){
+  return new Promise(res=>{
+    const cb="__fam"+Date.now();const s=document.createElement("script");
+    window[cb]=d=>{res(d);delete window[cb];s.remove();};
+    s.onerror=()=>{res(null);s.remove();};
+    s.src=API+"?action=load&callback="+cb+"&_="+Date.now();
+    document.head.appendChild(s);
+  });
+}
+async function load(){
+  if(API){try{const d=await loadRemote();if(d&&d.state)state=d.state;}catch(e){console.warn("load failed",e);}}
+  else if(hasWS){try{const r=await window.storage.get(KEY);if(r&&r.value)state=JSON.parse(r.value);}catch(e){}}
+  else{try{const v=localStorage.getItem(KEY);if(v)state=JSON.parse(v);}catch(e){}}
+  if(!state.members)state.members=DEFAULT_MEMBERS;
+  if(!state.prayers)state.prayers=DEFAULT_PRAYERS;
+  if(!state.goals)state.goals=DEFAULT_GOALS;
+  if(typeof state.devoIndex!=="number")state.devoIndex=new Date().getDay()%DEVOS.length;
+  if(typeof state.sound!=="boolean")state.sound=true;
+  if(typeof state.outings!=="number")state.outings=0;
+}
+let saveTimer=null;
+async function save(){
+  if(!API&&hasWS){try{await window.storage.set(KEY,JSON.stringify(state));}catch(e){}return;}
+  if(!API){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}return;}
+  /* remote: fire-and-forget GET (no-cors), debounced so taps don't spam the sheet */
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    fetch(API+"?action=save&data="+encodeURIComponent(JSON.stringify(state)),{mode:"no-cors"}).catch(e=>console.warn("save failed",e));
+  },600);
+}
+const $=s=>document.querySelector(s);
+
+/* ---------- happy chime ---------- */
+let actx;
+function chime(){
+  if(!state.sound)return;
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const notes=[523.25,659.25,783.99];
+    notes.forEach((f,k)=>{const o=actx.createOscillator(),g=actx.createGain();
+      o.type="triangle";o.frequency.value=f;o.connect(g);g.connect(actx.destination);
+      const t=actx.currentTime+k*0.08;g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.25,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.3);
+      o.start(t);o.stop(t+0.32);});
+  }catch(e){}
+}
+function flyStar(x,y){for(let k=0;k<3;k++){const s=document.createElement("div");s.className="flystar";s.textContent="⭐";
+  s.style.left=(x-8+(k-1)*16)+"px";s.style.top=(y-10)+"px";s.style.animationDelay=(k*0.05)+"s";
+  document.body.appendChild(s);setTimeout(()=>s.remove(),1100);}}
+
+/* ---------- render ---------- */
+function setDate(){$("#today").textContent=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+$("#sound").onclick=()=>{state.sound=!state.sound;$("#sound").textContent=state.sound?"🔊":"🔇";save();};
+
+function renderDevo(){
+  const d=state.custom||DEVOS[state.devoIndex%DEVOS.length];
+  $("#dev").innerHTML=`<span class="illum">${d.L||'✦'}</span>
+    <div class="ref">${d.ref}</div><div class="scripture">${d.scripture}</div>
+    <p class="reflect">${d.reflect}</p>
+    <div class="qa"><b>Talk about it:</b> ${d.q}</div>
+    <div class="pray"><b>Pray together:</b> ${d.pray}</div>
+    <div class="dev-actions">
+      <button class="btn ghost sm" id="nextDevo">Next one</button>
+      <button class="btn gold sm" id="aiDevo">✨ Make a new one with AI</button></div>`;
+  $("#nextDevo").onclick=()=>{state.custom=null;state.devoIndex=(state.devoIndex+1)%DEVOS.length;save();renderDevo();};
+  $("#aiDevo").onclick=aiDevo;
+}
+
+function renderFamily(){
+  $("#family").innerHTML=state.members.map((m,mi)=>`
+    <div class="card member ${parentMode?'editing':''}">
+      <div class="top">
+        <div class="monster" style="background:${m.colour}"><span class="pupils"><i></i><i></i></span>
+          <span class="horns" style="color:${m.colour}"><i style="border-bottom-color:${m.colour}"></i><i style="border-bottom-color:${m.colour}"></i></span></div>
+        <div><div class="name">${m.name}${parentMode?` <button class="mini" data-ren="${mi}" title="Rename">✏️</button>`:''}</div>${m.age?`<div class="age">${m.age} years old</div>`:''}</div>
+        <div class="scorepop"><div class="num" id="score-${mi}">${m.stars}</div><div class="lbl">stars</div></div>
+      </div>
+      <div class="tiles">
+        ${m.tasks.map((t,ti)=>`<div class="tile ${t.done?'done':''} ${parentMode?'edit':''}" data-m="${mi}" data-t="${ti}">
+          ${parentMode?`<span class="tiledel" data-del="${mi}_${ti}" title="Delete">✕</span>`:''}
+          <span class="badge">✓</span><span class="ico">${t.i}</span><span class="cap">${t.c}</span></div>`).join('')}
+        ${parentMode?`<div class="tile addtile" data-add="${mi}"><span class="ico">＋</span><span class="cap">Add task</span></div>`:''}
+      </div>
+    </div>`).join('');
+  if(parentMode){
+    document.querySelectorAll('.tile[data-t]').forEach(el=>el.onclick=()=>editTask(+el.dataset.m,+el.dataset.t));
+    document.querySelectorAll('[data-del]').forEach(el=>el.onclick=e=>{e.stopPropagation();const p=el.dataset.del.split('_').map(Number);delTask(p[0],p[1]);});
+    document.querySelectorAll('[data-add]').forEach(el=>el.onclick=()=>addTask(+el.dataset.add));
+    document.querySelectorAll('[data-ren]').forEach(el=>el.onclick=()=>renameMember(+el.dataset.ren));
+  }else{
+    document.querySelectorAll('.tile[data-t]').forEach(el=>{el.onclick=e=>tap(+el.dataset.m,+el.dataset.t,e);});
+  }
+}
+
+/* ---------- Parent Mode: PIN + task editing ---------- */
+let parentMode=false, pinBuf="", pinStage="", pinFirst="", pinTitle="", pinSub="";
+function showModal(html){$("#sheet").innerHTML=html;$("#modal").style.display="grid";}
+function hideModal(){$("#modal").style.display="none";}
+$("#modal").onclick=e=>{if(e.target.id==="modal")hideModal();};
+$("#gear").onclick=openGear;
+
+function openGear(){
+  if(parentMode){exitParent();return;}
+  pinBuf="";
+  if(!state.pin){pinStage="set1";pinFirst="";pinTitle="Set a Parent PIN";pinSub="Pick 4 numbers only grown-ups know.";}
+  else{pinStage="enter";pinTitle="Enter Parent PIN";pinSub="";}
+  drawPin("");
+}
+function drawPin(msg){
+  const dots=[0,1,2,3].map(i=>pinBuf.length>i?"●":"○").join(" ");
+  showModal(`<h3>${pinTitle}</h3><p>${pinSub||"&nbsp;"}</p><div class="pindisp">${dots}</div>
+    <div class="pinpad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="pinkey" data-k="${n}">${n}</button>`).join("")}
+      <button class="pinkey" data-k="del">⌫</button><button class="pinkey" data-k="0">0</button><button class="pinkey" data-k="x">✕</button></div>
+    <div class="msg">${msg||"&nbsp;"}</div>`);
+  $("#sheet").querySelectorAll(".pinkey").forEach(b=>b.onclick=()=>pinKey(b.dataset.k));
+}
+function pinKey(k){
+  if(k==="x")return hideModal();
+  if(k==="del"){pinBuf=pinBuf.slice(0,-1);return drawPin("");}
+  if(pinBuf.length>=4)return;
+  pinBuf+=k;
+  if(pinBuf.length<4)return drawPin("");
+  if(pinStage==="set1"){pinFirst=pinBuf;pinBuf="";pinStage="set2";pinTitle="Confirm PIN";pinSub="Type the same 4 numbers again.";return drawPin("");}
+  if(pinStage==="set2"){
+    if(pinBuf===pinFirst){state.pin=pinBuf;save();enterParent();}
+    else{pinBuf="";pinStage="set1";pinTitle="Set a Parent PIN";pinSub="They didn't match — let's try again.";drawPin("");}
+    return;
+  }
+  if(pinBuf===state.pin)enterParent();
+  else{pinBuf="";drawPin("Wrong PIN — try again.");}
+}
+function enterParent(){parentMode=true;hideModal();renderFamily();showPMBanner();}
+function exitParent(){parentMode=false;const b=$("#pmBanner");if(b)b.style.display="none";renderFamily();}
+function showPMBanner(){
+  let b=$("#pmBanner");
+  if(!b){b=document.createElement("div");b.id="pmBanner";b.className="pmbanner";document.body.appendChild(b);}
+  b.innerHTML=`<span>⚙️ Parent Mode — tap a picture to edit it, ✕ to delete, ＋ to add.</span>
+    <button class="btn ghost sm" id="pmPinChg">Change PIN</button>
+    <button class="btn gold sm" id="pmDone">Done</button>`;
+  b.style.display="flex";
+  $("#pmDone").onclick=exitParent;
+  $("#pmPinChg").onclick=()=>{pinBuf="";pinStage="set1";pinFirst="";pinTitle="Set a new Parent PIN";pinSub="Pick 4 new numbers.";drawPin("");};
+}
+function editTask(mi,ti){
+  const t=state.members[mi].tasks[ti];
+  const ico=prompt("Picture (emoji) for this task:",t.i); if(ico===null)return;
+  const cap=prompt("Words for this task:",t.c); if(cap===null)return;
+  t.i=ico.trim()||t.i; t.c=cap.trim()||t.c; save(); renderFamily();
+}
+function delTask(mi,ti){
+  const m=state.members[mi],t=m.tasks[ti];
+  if(!confirm(`Delete "${t.c}" from ${m.name}?`))return;
+  if(t.done)m.stars=Math.max(0,m.stars-1);
+  m.tasks.splice(ti,1); save(); renderFamily(); renderJar(false);
+}
+function addTask(mi){
+  const ico=prompt("Picture (emoji) for the new task:","⭐"); if(ico===null)return;
+  const cap=prompt("Words for the new task:",""); if(cap===null||!cap.trim())return;
+  state.members[mi].tasks.push({i:ico.trim()||"⭐",c:cap.trim(),done:false}); save(); renderFamily();
+}
+function renameMember(mi){
+  const n=prompt("Name:",state.members[mi].name); if(n===null||!n.trim())return;
+  state.members[mi].name=n.trim(); save(); renderFamily();
+}
+
+function tap(mi,ti,e){
+  const t=state.members[mi].tasks[ti];
+  t.done=!t.done;
+  state.members[mi].stars+=t.done?1:-1;
+  if(state.members[mi].stars<0)state.members[mi].stars=0;
+  if(t.done){chime();const r=e.currentTarget.getBoundingClientRect();flyStar(r.left+r.width/2,r.top);}
+  save();
+  const el=e.currentTarget;el.classList.toggle('done',t.done);
+  el.querySelector('.badge').style.display=t.done?'grid':'none';
+  const sc=$("#score-"+mi);sc.textContent=state.members[mi].stars;sc.classList.remove('bumping');void sc.offsetWidth;sc.classList.add('bumping');
+  renderJar();
+}
+
+function totalStars(){return state.members.reduce((s,m)=>s+m.stars,0);}
+let jarWon=false;
+function renderJar(animate=true){
+  const total=totalStars(),pct=Math.min(100,total);
+  const bar=$("#jarFill"),cnt=$("#jarCount"),bn=$("#jarBanner"),tr=$("#jarTrophy");
+  if(bar)bar.style.width=pct+"%";
+  if(cnt)cnt.textContent=total;
+  if(tr)tr.textContent=state.outings>0?("🏆 "+state.outings+" outing"+(state.outings>1?"s":"")+" earned"):"";
+  if(total>=100){if(bn)bn.style.display="flex";if(!jarWon){jarWon=true;if(animate)celebrate();}}
+  else{if(bn)bn.style.display="none";jarWon=false;}
+}
+function celebrate(){
+  chime();setTimeout(chime,300);
+  const emo=["🎉","⭐","🍦","☕","🎈","✨"];
+  for(let k=0;k<28;k++){const c=document.createElement("div");c.className="confetti";
+    c.textContent=emo[k%emo.length];c.style.left=Math.random()*100+"vw";
+    c.style.animationDelay=(Math.random()*.6)+"s";c.style.fontSize=(1+Math.random())+"rem";
+    document.body.appendChild(c);setTimeout(()=>c.remove(),2600);}
+}
+
+function renderPrayers(){
+  const ul=$("#prayers");
+  if(!state.prayers.length){ul.innerHTML=`<li class="empty">No prayers yet — add the first one above.</li>`;return;}
+  ul.innerHTML=state.prayers.map((p,i)=>`<li class="${p.answered?'answered':''}">
+    <span class="txt">${p.txt}</span>
+    <button class="btn ${p.answered?'gold':'ghost'} sm" data-ans="${i}">${p.answered?'Answered!':'Mark answered'}</button>
+    <button class="del" data-pdel="${i}">✕</button></li>`).join('');
+  ul.querySelectorAll('[data-ans]').forEach(b=>b.onclick=()=>{const p=state.prayers[+b.dataset.ans];p.answered=!p.answered;if(p.answered)chime();save();renderPrayers();});
+  ul.querySelectorAll('[data-pdel]').forEach(b=>b.onclick=()=>{state.prayers.splice(+b.dataset.pdel,1);save();renderPrayers();});
+}
+$("#prayerInput").onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim()){state.prayers.unshift({txt:e.target.value.trim(),answered:false});e.target.value='';save();renderPrayers();}};
+
+function renderGoals(){
+  $("#goals").innerHTML=state.goals.map((g,i)=>{const pct=Math.min(100,Math.round(g.done/g.target*100));
+    return `<div class="goal"><div class="glabel"><span>${g.name}</span><span>${g.done}/${g.target}${pct===100?' 🎉':''}</span></div>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <div class="gbtns"><button data-gm="${i}">−</button><button data-gp="${i}">＋</button></div></div>`;}).join('');
+  document.querySelectorAll('[data-gp]').forEach(b=>b.onclick=()=>{const g=state.goals[+b.dataset.gp];g.done=Math.min(g.target,g.done+1);if(g.done===g.target)chime();save();renderGoals();});
+  document.querySelectorAll('[data-gm]').forEach(b=>b.onclick=()=>{const g=state.goals[+b.dataset.gm];g.done=Math.max(0,g.done-1);save();renderGoals();});
+}
+
+async function aiDevo(){
+  const btn=$("#aiDevo"),original=btn.innerHTML;btn.innerHTML=`<span class="spin"></span>Writing…`;btn.disabled=true;
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:
+        "Write a short Christ-centred family devotional for young children (ages 1-5). Return ONLY JSON, no markdown, keys: "+
+        "ref (real short Bible reference), scripture (short verse in quotes), reflect (2 warm simple sentences about obeying parents, honouring family, kindness or serving), "+
+        "q (one discussion question), pray (a one-sentence child's prayer). Joyful, gentle, true to Scripture."}]})});
+    const data=await res.json();
+    let txt=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("").replace(/```json|```/g,"").trim();
+    const d=JSON.parse(txt);d.L=d.scripture.replace(/[“"]/,'').charAt(0).toUpperCase();
+    state.custom=d;save();renderDevo();chime();
+  }catch(e){btn.innerHTML=original;btn.disabled=false;
+    alert("Couldn't reach the AI just now — here's a fresh one from our collection!");
+    state.custom=null;state.devoIndex=(state.devoIndex+1)%DEVOS.length;save();renderDevo();}
+}
+
+(async function(){setDate();await load();$("#sound").textContent=state.sound?"🔊":"🔇";
+  renderDevo();renderFamily();renderPrayers();renderGoals();renderJar(false);
+  $("#claimBtn").onclick=()=>{state.outings++;state.members.forEach(m=>m.stars=0);jarWon=false;save();renderFamily();renderJar(false);celebrate();};
+  $("#newDayBtn").onclick=()=>{state.members.forEach(m=>m.tasks.forEach(t=>t.done=false));save();renderFamily();};
+})();
+</script>
