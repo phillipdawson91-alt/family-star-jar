@@ -198,6 +198,7 @@
 
 <div class="modal" id="modal" style="display:none"><div class="sheet" id="sheet"></div></div>
 
+<script src="devotions.js"></script>
 <script>
 /* ---------- devotionals ---------- */
 const DEVOS=[
@@ -282,7 +283,9 @@ async function load(){
   if(!state.members)state.members=DEFAULT_MEMBERS;
   if(!state.prayers)state.prayers=DEFAULT_PRAYERS;
   if(!state.goals)state.goals=DEFAULT_GOALS;
-  if(typeof state.devoIndex!=="number")state.devoIndex=new Date().getDay()%DEVOS.length;
+  if(typeof state.devoIndex!=="number")state.devoIndex=0;
+  {const _dy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);
+   if(state.devoDay!==_dy){state.devoDay=_dy;state.devoIndex=0;state.custom=null;}}
   if(typeof state.sound!=="boolean")state.sound=true;
   if(typeof state.outings!=="number")state.outings=0;
 }
@@ -320,8 +323,13 @@ function flyStar(x,y){for(let k=0;k<3;k++){const s=document.createElement("div")
 function setDate(){$("#today").textContent=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
 $("#sound").onclick=()=>{state.sound=!state.sound;$("#sound").textContent=state.sound?"🔊":"🔇";save();};
 
+function devoSet(){return (window.DEVOS365&&window.DEVOS365.length)?window.DEVOS365:DEVOS;}
+function dayOfYear(){const n=new Date();return Math.floor((n-new Date(n.getFullYear(),0,0))/86400000);} /* 1..366 */
 function renderDevo(){
-  const d=state.custom||DEVOS[state.devoIndex%DEVOS.length];
+  const SET=devoSet(), base=(dayOfYear()-1)%SET.length;
+  const idx=(((base+(state.devoIndex||0))%SET.length)+SET.length)%SET.length;
+  const d=state.custom||SET[idx];
+  const browsing=!state.custom&&((state.devoIndex||0)%SET.length)!==0;
   $("#dev").innerHTML=`<span class="illum">${d.L||'✦'}</span>
     <div class="ref">${d.ref}</div><div class="scripture">${d.scripture}</div>
     <p class="reflect">${d.reflect}</p>
@@ -329,8 +337,10 @@ function renderDevo(){
     <div class="pray"><b>Pray together:</b> ${d.pray}</div>
     <div class="dev-actions">
       <button class="btn ghost sm" id="nextDevo">Next one</button>
+      ${browsing?`<button class="btn ghost sm" id="todayDevo">↩ Today's</button>`:''}
       <button class="btn gold sm" id="aiDevo">✨ Make a new one with AI</button></div>`;
-  $("#nextDevo").onclick=()=>{state.custom=null;state.devoIndex=(state.devoIndex+1)%DEVOS.length;save();renderDevo();};
+  $("#nextDevo").onclick=()=>{state.custom=null;state.devoIndex=(state.devoIndex||0)+1;save();renderDevo();};
+  if(browsing)$("#todayDevo").onclick=()=>{state.custom=null;state.devoIndex=0;save();renderDevo();};
   $("#aiDevo").onclick=aiDevo;
 }
 
