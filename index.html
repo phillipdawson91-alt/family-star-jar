@@ -283,12 +283,11 @@ function loadLocal(){
 }
 async function load(){
   let got=false;
-  /* 1) shared backend (best effort) */
-  if(API){try{const d=await loadRemote();if(d&&d.state){state=d.state;got=true;}}catch(e){}}
-  /* 2) claude.ai artifact storage */
-  if(!got&&hasWS){try{const r=await window.storage.get(KEY);if(r&&r.value){state=JSON.parse(r.value);got=true;}}catch(e){}}
-  /* 3) localStorage — always available fallback so data is never lost */
+  /* 1) this device's own saved data first — always reliable, never lost */
+  if(hasWS){try{const r=await window.storage.get(KEY);if(r&&r.value){state=JSON.parse(r.value);got=true;}}catch(e){}}
   if(!got){const v=loadLocal();if(v){state=v;got=true;}}
+  /* 2) fresh device with nothing saved yet: seed from the shared backend if reachable */
+  if(!got&&API){try{const d=await loadRemote();if(d&&d.state){state=d.state;got=true;}}catch(e){}}
   if(!state.members)state.members=DEFAULT_MEMBERS;
   if(!state.prayers)state.prayers=DEFAULT_PRAYERS;
   if(!state.goals)state.goals=DEFAULT_GOALS;
