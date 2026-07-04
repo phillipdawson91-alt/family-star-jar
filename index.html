@@ -194,8 +194,14 @@
     .tile .ico{font-size:2.7rem}
   }
   /* ---- devotional calendar ---- */
-  .cal{padding:16px 16px 14px}
-  .calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .cal{padding:12px 16px}
+  .caltoggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:none;border:0;cursor:pointer;font-family:'Baloo 2',system-ui,sans-serif;font-size:1.02rem;font-weight:700;color:var(--ink);padding:5px 2px}
+  .caltoggle .calsel{display:flex;align-items:center;gap:8px;color:var(--lapis);font-weight:800}
+  .caltoggle .calchev{color:var(--muted);font-size:.8rem}
+  .calbody{margin-top:12px}
+  .cal.collapsed .calbody{display:none}
+  .calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
   .calhead .mlabel{font-family:'Fraunces',serif;font-weight:700;font-size:1.25rem;color:var(--ink)}
   .calnav{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);
     font-size:1.4rem;line-height:1;color:var(--lapis);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
@@ -203,9 +209,9 @@
   .calnav:active{transform:scale(.94)}
   .caldow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
   .caldow span{text-align:center;font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-  .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-  .calcell{aspect-ratio:1/1;border:1px solid var(--line);border-radius:12px;background:var(--card);
-    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.05rem;color:var(--ink);
+  .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+  .calcell{height:40px;border:1px solid var(--line);border-radius:10px;background:var(--card);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.98rem;color:var(--ink);
     cursor:pointer;user-select:none;transition:transform .05s,background .1s}
   .calcell:hover{background:#FBF4E6}
   .calcell:active{transform:scale(.92)}
@@ -218,8 +224,8 @@
   .callegend .lg-today{border:2px solid var(--gold);background:var(--gold-soft)}
   .callegend .lg-sel{background:var(--lapis)}
   @media(max-width:760px){
-    .calcell{font-size:1.15rem;border-radius:14px}
-    .calnav{width:48px;height:48px;font-size:1.55rem}
+    .calcell{height:46px;font-size:1.08rem;border-radius:12px}
+    .calnav{width:46px;height:46px;font-size:1.5rem}
     .calhead .mlabel{font-size:1.4rem}
     .caldow span{font-size:.68rem}
   }
@@ -417,6 +423,7 @@ function dayOfYear(){const n=new Date();const cum=[0,31,60,91,121,152,182,213,24
 /* The date whose devotional is shown (defaults to today; resets on reload). */
 let viewDate=new Date(); viewDate.setHours(0,0,0,0);
 let calY=viewDate.getFullYear(), calM=viewDate.getMonth();
+let calOpen=false; /* calendar starts collapsed so it stays compact */
 /* 0-based slot into the 366-day set for any calendar date (leap-aware, matches dayOfYear). */
 function slotForDate(dt){const cum=[0,31,60,91,121,152,182,213,244,274,305,335];return cum[dt.getMonth()]+dt.getDate()-1;}
 function sameYMD(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
@@ -455,6 +462,7 @@ function renderCal(){
   const today=new Date(), first=new Date(calY,calM,1);
   const startDow=(first.getDay()+6)%7, dim=new Date(calY,calM+1,0).getDate();
   const monthName=first.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  const selLabel=state.custom?'A fresh devotional':(sameYMD(viewDate,today)?'Today':viewDate.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}));
   const dows=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   let cells='';
   for(let i=0;i<startDow;i++)cells+='<div class="calcell empty"></div>';
@@ -464,11 +472,17 @@ function renderCal(){
     if(!state.custom&&sameYMD(cd,viewDate))cls+=' sel';
     cells+=`<div class="${cls}" data-d="${dd}">${dd}</div>`;
   }
-  el.innerHTML=`<div class="calhead"><button class="calnav" id="calPrev" aria-label="Previous month">‹</button>`+
-    `<div class="mlabel">${monthName}</div><button class="calnav" id="calNext" aria-label="Next month">›</button></div>`+
-    `<div class="caldow">${dows.map(x=>`<span>${x}</span>`).join('')}</div>`+
-    `<div class="calgrid">${cells}</div>`+
-    `<div class="callegend"><span><i class="lg-today"></i>Today</span><span><i class="lg-sel"></i>Selected day</span></div>`;
+  el.className='card cal'+(calOpen?'':' collapsed');
+  el.innerHTML=`<button class="caltoggle" id="calToggle" aria-expanded="${calOpen}"><span>📅 Choose a date</span>`+
+    `<span class="calsel">${selLabel}<span class="calchev">${calOpen?'▾':'▸'}</span></span></button>`+
+    `<div class="calbody">`+
+      `<div class="calhead"><button class="calnav" id="calPrev" aria-label="Previous month">‹</button>`+
+      `<div class="mlabel">${monthName}</div><button class="calnav" id="calNext" aria-label="Next month">›</button></div>`+
+      `<div class="caldow">${dows.map(x=>`<span>${x}</span>`).join('')}</div>`+
+      `<div class="calgrid">${cells}</div>`+
+      `<div class="callegend"><span><i class="lg-today"></i>Today</span><span><i class="lg-sel"></i>Selected day</span></div>`+
+    `</div>`;
+  $("#calToggle").onclick=()=>{calOpen=!calOpen;renderCal();};
   $("#calPrev").onclick=()=>{if(--calM<0){calM=11;calY--;}renderCal();};
   $("#calNext").onclick=()=>{if(++calM>11){calM=0;calY++;}renderCal();};
   el.querySelectorAll('.calcell[data-d]').forEach(c=>c.onclick=()=>{
