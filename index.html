@@ -193,6 +193,36 @@
     header h1{font-size:2.15rem}
     .tile .ico{font-size:2.7rem}
   }
+  /* ---- devotional calendar ---- */
+  .cal{padding:16px 16px 14px}
+  .calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .calhead .mlabel{font-family:'Fraunces',serif;font-weight:700;font-size:1.25rem;color:var(--ink)}
+  .calnav{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);
+    font-size:1.4rem;line-height:1;color:var(--lapis);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .calnav:hover{background:#FBF4E6}
+  .calnav:active{transform:scale(.94)}
+  .caldow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
+  .caldow span{text-align:center;font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .calcell{aspect-ratio:1/1;border:1px solid var(--line);border-radius:12px;background:var(--card);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.05rem;color:var(--ink);
+    cursor:pointer;user-select:none;transition:transform .05s,background .1s}
+  .calcell:hover{background:#FBF4E6}
+  .calcell:active{transform:scale(.92)}
+  .calcell.empty{border:0;background:transparent;cursor:default}
+  .calcell.today{border:2px solid var(--gold);box-shadow:0 0 0 3px var(--gold-soft) inset}
+  .calcell.sel{background:var(--lapis);color:#fff;border-color:var(--lapis)}
+  .calcell.today.sel{background:var(--garnet);border-color:var(--gold);color:#fff}
+  .callegend{display:flex;gap:18px;justify-content:center;margin-top:14px;font-size:.82rem;color:var(--muted);flex-wrap:wrap}
+  .callegend i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px;box-sizing:border-box}
+  .callegend .lg-today{border:2px solid var(--gold);background:var(--gold-soft)}
+  .callegend .lg-sel{background:var(--lapis)}
+  @media(max-width:760px){
+    .calcell{font-size:1.15rem;border-radius:14px}
+    .calnav{width:48px;height:48px;font-size:1.55rem}
+    .calhead .mlabel{font-size:1.4rem}
+    .caldow span{font-size:.68rem}
+  }
 </style>
 
 <div class="wrap">
@@ -218,7 +248,8 @@
     </div>
   </div>
 
-  <h2>📖 Today's Devotional <span class="rule"></span></h2>
+  <h2><span id="devTitle">📖 Today's Devotional</span> <span class="rule"></span></h2>
+  <div class="card cal" id="cal"></div>
   <div class="card dev" id="dev"></div>
 
   <h2>🌟 Star Points — tap when you do a good thing! <span class="rule"></span></h2>
@@ -383,11 +414,22 @@ $("#sound").onclick=()=>{state.sound=!state.sound;$("#sound").textContent=state.
 function devoSet(){return (window.DEVOS365&&window.DEVOS365.length)?window.DEVOS365:DEVOS;}
 /* Leap-aware slot into the 366-day set (Mar–Dec always align to the same date). */
 function dayOfYear(){const n=new Date();const cum=[0,31,60,91,121,152,182,213,244,274,305,335];return cum[n.getMonth()]+n.getDate();}
+/* The date whose devotional is shown (defaults to today; resets on reload). */
+let viewDate=new Date(); viewDate.setHours(0,0,0,0);
+let calY=viewDate.getFullYear(), calM=viewDate.getMonth();
+/* 0-based slot into the 366-day set for any calendar date (leap-aware, matches dayOfYear). */
+function slotForDate(dt){const cum=[0,31,60,91,121,152,182,213,244,274,305,335];return cum[dt.getMonth()]+dt.getDate()-1;}
+function sameYMD(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+function addDays(dt,n){const x=new Date(dt);x.setDate(x.getDate()+n);x.setHours(0,0,0,0);return x;}
+function goToday(){state.custom=null;viewDate=new Date();viewDate.setHours(0,0,0,0);calY=viewDate.getFullYear();calM=viewDate.getMonth();save();renderDevo();renderCal();}
 function renderDevo(){
-  const SET=devoSet(), base=(dayOfYear()-1)%SET.length;
-  const idx=(((base+(state.devoIndex||0))%SET.length)+SET.length)%SET.length;
-  const d=state.custom||SET[idx];
-  const browsing=!state.custom&&((state.devoIndex||0)%SET.length)!==0;
+  const SET=devoSet(), today=new Date();
+  const onToday=sameYMD(viewDate,today);
+  let d,browsing,title;
+  if(state.custom){ d=state.custom; browsing=true; title="✨ A fresh devotional"; }
+  else{ const idx=((slotForDate(viewDate)%SET.length)+SET.length)%SET.length; d=SET[idx]; browsing=!onToday;
+    title=onToday?"📖 Today's Devotional":"📖 "+viewDate.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'long'}); }
+  const t=$("#devTitle"); if(t)t.textContent=title;
   const paras=d.body?(Array.isArray(d.body)?d.body:[d.body]):(d.reflect?[d.reflect]:[]);
   let bodyHtml=paras.map(p=>`<p class="reflect">${p}</p>`).join('');
   if(!d.body&&d.deeper)bodyHtml+=`<details class="deeper"><summary>Go deeper · for grown-ups</summary><p>${d.deeper}</p></details>`;
@@ -399,12 +441,41 @@ function renderDevo(){
     ${qHtml}
     <div class="pray"><b>Pray together:</b> ${d.pray}</div>
     <div class="dev-actions">
-      <button class="btn ghost sm" id="nextDevo">Next one</button>
-      ${browsing?`<button class="btn ghost sm" id="todayDevo">↩ Today's</button>`:''}
+      <button class="btn ghost sm" id="prevDevo">‹ Previous day</button>
+      <button class="btn ghost sm" id="nextDevo">Next day ›</button>
+      ${browsing?`<button class="btn ghost sm" id="todayDevo">↩ Back to today</button>`:''}
       <button class="btn gold sm" id="aiDevo">✨ Make a new one with AI</button></div>`;
-  $("#nextDevo").onclick=()=>{state.custom=null;state.devoIndex=(state.devoIndex||0)+1;save();renderDevo();};
-  if(browsing)$("#todayDevo").onclick=()=>{state.custom=null;state.devoIndex=0;save();renderDevo();};
+  $("#prevDevo").onclick=()=>{state.custom=null;viewDate=addDays(viewDate,-1);calY=viewDate.getFullYear();calM=viewDate.getMonth();save();renderDevo();renderCal();};
+  $("#nextDevo").onclick=()=>{state.custom=null;viewDate=addDays(viewDate,1);calY=viewDate.getFullYear();calM=viewDate.getMonth();save();renderDevo();renderCal();};
+  if(browsing)$("#todayDevo").onclick=goToday;
   $("#aiDevo").onclick=aiDevo;
+}
+function renderCal(){
+  const el=$("#cal"); if(!el)return;
+  const today=new Date(), first=new Date(calY,calM,1);
+  const startDow=(first.getDay()+6)%7, dim=new Date(calY,calM+1,0).getDate();
+  const monthName=first.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  const dows=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let cells='';
+  for(let i=0;i<startDow;i++)cells+='<div class="calcell empty"></div>';
+  for(let dd=1;dd<=dim;dd++){
+    const cd=new Date(calY,calM,dd); let cls='calcell';
+    if(sameYMD(cd,today))cls+=' today';
+    if(!state.custom&&sameYMD(cd,viewDate))cls+=' sel';
+    cells+=`<div class="${cls}" data-d="${dd}">${dd}</div>`;
+  }
+  el.innerHTML=`<div class="calhead"><button class="calnav" id="calPrev" aria-label="Previous month">‹</button>`+
+    `<div class="mlabel">${monthName}</div><button class="calnav" id="calNext" aria-label="Next month">›</button></div>`+
+    `<div class="caldow">${dows.map(x=>`<span>${x}</span>`).join('')}</div>`+
+    `<div class="calgrid">${cells}</div>`+
+    `<div class="callegend"><span><i class="lg-today"></i>Today</span><span><i class="lg-sel"></i>Selected day</span></div>`;
+  $("#calPrev").onclick=()=>{if(--calM<0){calM=11;calY--;}renderCal();};
+  $("#calNext").onclick=()=>{if(++calM>11){calM=0;calY++;}renderCal();};
+  el.querySelectorAll('.calcell[data-d]').forEach(c=>c.onclick=()=>{
+    viewDate=new Date(calY,calM,+c.dataset.d);viewDate.setHours(0,0,0,0);
+    state.custom=null;save();renderDevo();renderCal();
+    const dv=$("#dev"); if(dv)dv.scrollIntoView({behavior:'smooth',block:'nearest'});
+  });
 }
 
 function renderFamily(){
@@ -584,11 +655,11 @@ async function aiDevo(){
     state.custom=d;save();renderDevo();chime();
   }catch(e){btn.innerHTML=original;btn.disabled=false;
     alert("Couldn't reach the AI just now — here's a fresh one from our collection!");
-    state.custom=null;state.devoIndex=(state.devoIndex+1)%DEVOS.length;save();renderDevo();}
+    state.custom=null;viewDate=addDays(viewDate,1);calY=viewDate.getFullYear();calM=viewDate.getMonth();save();renderDevo();renderCal();}
 }
 
 (async function(){setDate();await load();$("#sound").textContent=state.sound?"🔊":"🔇";
-  renderDevo();renderFamily();renderPrayers();renderGoals();renderJar(false);
+  renderDevo();renderCal();renderFamily();renderPrayers();renderGoals();renderJar(false);
   $("#claimBtn").onclick=()=>{state.outings++;state.members.forEach(m=>m.stars=0);jarWon=false;save();renderFamily();renderJar(false);celebrate();};
   $("#newDayBtn").onclick=()=>{state.members.forEach(m=>m.tasks.forEach(t=>t.done=false));save();renderFamily();};
 })();
