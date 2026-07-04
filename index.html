@@ -148,6 +148,48 @@
     background:linear-gradient(100deg,rgba(46,94,170,.96),rgba(156,43,59,.96));color:#fff;padding:12px 16px;font-weight:800;
     box-shadow:0 -6px 20px -8px rgba(0,0,0,.4)}
   .pmbanner .btn.gold{background:var(--gold)} .pmbanner .btn.ghost{border-color:#fff;color:#fff}
+
+  /* ===== Kid-friendly "Skylight" pass — bigger, calmer, more tappable ===== */
+  body{font-size:1.06rem}
+  .wrap{max-width:1120px}
+  h2{font-size:1.6rem;margin-top:36px}
+  .card{padding:24px;border-radius:22px}
+  /* Devotional: child text large & readable; grown-up note tucked away */
+  .dev .scripture{font-size:1.3rem;line-height:1.5}
+  .dev .reflect{font-size:1.14rem;line-height:1.62}
+  .dev .qa,.dev .pray{font-size:1.06rem;padding:14px 16px}
+  .deeper{margin:2px 0 14px;border-left:3px solid var(--gold);background:rgba(201,154,59,.07);border-radius:0 12px 12px 0;padding:6px 16px}
+  .deeper summary{cursor:pointer;font-weight:800;color:var(--gold);font-size:.95rem;list-style:none;padding:6px 0}
+  .deeper summary::-webkit-details-marker{display:none}
+  .deeper summary::before{content:"▸ "}
+  .deeper[open] summary::before{content:"▾ "}
+  .deeper p{margin:6px 0 6px;color:#6b5f57;font-size:1rem;line-height:1.56}
+  /* Bigger star tiles for little fingers */
+  .grid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px}
+  .tiles{gap:12px}
+  .tile{padding:18px 8px 16px;border-radius:18px;border-width:3px;min-height:108px;justify-content:center}
+  .tile .ico{font-size:2.5rem}
+  .tile .cap{font-size:1rem;line-height:1.15}
+  .tile .badge{width:30px;height:30px;font-size:1.1rem;top:-10px;right:-10px}
+  /* Bigger avatars & scores */
+  .monster{width:74px;height:74px}
+  .member .name{font-size:1.5rem}
+  .scorepop .num{font-size:2.4rem}
+  .scorepop .lbl{font-size:.68rem}
+  /* Friendlier buttons with proper tap height */
+  .btn{padding:13px 22px;font-size:1.05rem;min-height:48px}
+  .btn.sm{padding:10px 18px;font-size:1rem;min-height:44px}
+  .gbtns button{padding:6px 22px;font-size:1.3rem;min-height:46px}
+  /* Taller jar */
+  .jarbar{height:44px}
+  .jartitle{font-size:1.55rem}
+  .jarnum{font-size:1.15rem}
+  .pcard input{font-size:1.08rem;padding:14px 16px}
+  @media(max-width:760px){
+    .grid{grid-template-columns:1fr}
+    header h1{font-size:2.15rem}
+    .tile .ico{font-size:2.7rem}
+  }
 </style>
 
 <div class="wrap">
@@ -346,6 +388,7 @@ function renderDevo(){
   $("#dev").innerHTML=`<span class="illum">${d.L||'✦'}</span>
     <div class="ref">${d.ref}</div><div class="scripture">${d.scripture}</div>
     <p class="reflect">${d.reflect}</p>
+    ${d.deeper?`<details class="deeper"><summary>Go deeper · for grown-ups</summary><p>${d.deeper}</p></details>`:''}
     <div class="qa"><b>Talk about it:</b> ${d.q}</div>
     <div class="pray"><b>Pray together:</b> ${d.pray}</div>
     <div class="dev-actions">
