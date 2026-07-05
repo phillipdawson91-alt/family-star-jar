@@ -517,7 +517,7 @@ function renderFamily(){
           ${parentMode?`<span class="tiledel" data-del="${mi}_${ti}" title="Delete">✕</span>`:''}
           <span class="badge">✓</span><span class="ico">${t.i}</span><span class="cap">${t.c}</span></div>`).join('')}
         ${parentMode?`<div class="tile addtile" data-add="${mi}"><span class="ico">＋</span><span class="cap">Add task</span></div>`:''}
-        ${parentMode?`<div class="tile othertile" data-other="${mi}"><span class="ico">✨</span><span class="cap">Other great things</span></div>`:''}
+        <div class="tile othertile" data-other="${mi}"><span class="ico">✨</span><span class="cap">Other great things</span></div>
       </div>
       ${parentMode&&Array.isArray(m.extras)&&m.extras.length?`<div class="extralog"><div class="extralog-h">✨ Other great things — ${m.extras.length} star${m.extras.length>1?'s':''}</div>${m.extras.map((x,xi)=>`<div class="extrarow"><span class="extrar">${escapeHtml(x.reason)}</span><span class="extrad">${new Date(x.ts).toLocaleDateString(undefined,{day:'numeric',month:'short'})}</span><button class="mini" data-xdel="${mi}_${xi}" title="Remove star">✕</button></div>`).join('')}</div>`:''}
     </div>`).join('');
@@ -526,23 +526,34 @@ function renderFamily(){
     document.querySelectorAll('[data-del]').forEach(el=>el.onclick=e=>{e.stopPropagation();const p=el.dataset.del.split('_').map(Number);delTask(p[0],p[1]);});
     document.querySelectorAll('[data-add]').forEach(el=>el.onclick=()=>addTask(+el.dataset.add));
     document.querySelectorAll('[data-ren]').forEach(el=>el.onclick=()=>renameMember(+el.dataset.ren));
-    document.querySelectorAll('[data-other]').forEach(el=>el.onclick=()=>awardOther(+el.dataset.other,el));
     document.querySelectorAll('[data-xdel]').forEach(el=>el.onclick=()=>{const p=el.dataset.xdel.split('_').map(Number);delExtra(p[0],p[1]);});
   }else{
     document.querySelectorAll('.tile[data-t]').forEach(el=>{el.onclick=e=>tap(+el.dataset.m,+el.dataset.t,e);});
   }
+  /* "Other great things" tile is always visible; PIN is enforced on tap inside awardOther */
+  document.querySelectorAll('[data-other]').forEach(el=>el.onclick=()=>awardOther(+el.dataset.other,el));
 }
 
 /* ---------- Parent Mode: PIN + task editing ---------- */
-let parentMode=false, pinBuf="", pinStage="", pinFirst="", pinTitle="", pinSub="";
+let parentMode=false, pinBuf="", pinStage="", pinFirst="", pinTitle="", pinSub="", pinVerifyCb=null;
 function showModal(html){$("#sheet").innerHTML=html;$("#modal").style.display="grid";}
-function hideModal(){$("#modal").style.display="none";}
+function hideModal(){$("#modal").style.display="none";pinVerifyCb=null;}
+/* Ask for the PIN before running an action. If Parent Mode is on, skip and run now.
+   Wrong PIN / cancel => callback never fires (nothing happens). */
+function askPin(cb){
+  if(parentMode){cb&&cb();return;}
+  pinVerifyCb=cb; pinBuf="";
+  if(!state.pin){pinStage="set1";pinFirst="";pinTitle="Set a Parent PIN";pinSub="Pick 4 numbers only grown-ups know.";}
+  else{pinStage="verify";pinTitle="Enter Parent PIN";pinSub="Grown-ups only — enter your PIN.";}
+  drawPin("");
+}
+function pinDone(){ if(pinVerifyCb){const cb=pinVerifyCb;pinVerifyCb=null;hideModal();cb();} else enterParent(); }
 $("#modal").onclick=e=>{if(e.target.id==="modal")hideModal();};
 $("#gear").onclick=openGear;
 
 function openGear(){
   if(parentMode){exitParent();return;}
-  pinBuf="";
+  pinBuf=""; pinVerifyCb=null;
   if(!state.pin){pinStage="set1";pinFirst="";pinTitle="Set a Parent PIN";pinSub="Pick 4 numbers only grown-ups know.";}
   else{pinStage="enter";pinTitle="Enter Parent PIN";pinSub="";}
   drawPin("");
@@ -563,11 +574,14 @@ function pinKey(k){
   if(pinBuf.length<4)return drawPin("");
   if(pinStage==="set1"){pinFirst=pinBuf;pinBuf="";pinStage="set2";pinTitle="Confirm PIN";pinSub="Type the same 4 numbers again.";return drawPin("");}
   if(pinStage==="set2"){
-    if(pinBuf===pinFirst){state.pin=pinBuf;save();enterParent();}
+    if(pinBuf===pinFirst){state.pin=pinBuf;save();pinDone();}
     else{pinBuf="";pinStage="set1";pinTitle="Set a Parent PIN";pinSub="They didn't match — let's try again.";drawPin("");}
     return;
   }
-  if(pinBuf===state.pin)enterParent();
+  if(pinBuf===state.pin){
+    if(pinStage==="verify"){const cb=pinVerifyCb;pinVerifyCb=null;hideModal();if(cb)cb();}
+    else enterParent();
+  }
   else{pinBuf="";drawPin("Wrong PIN — try again.");}
 }
 function enterParent(){parentMode=true;hideModal();renderFamily();renderGoals();renderPrayers();showPMBanner();}
@@ -604,9 +618,10 @@ function renameMember(mi){
   state.members[mi].name=n.trim(); save(); renderFamily();
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-/* Parent-only "Other great things" award: requires a typed reason, gives a ⭐ (counts toward the jar), logs the reason. */
-function awardOther(mi,el){
-  if(!parentMode)return;                       // parent-lock: never from a child tap
+/* "Other great things" award: always-visible tile; PIN is required on TAP (unless already in Parent Mode).
+   On correct PIN it requires a typed reason, gives a ⭐ (counts toward the jar), and logs the reason. */
+function awardOther(mi,el){ askPin(()=>doAwardOther(mi,el)); }   // wrong PIN / cancel => nothing happens
+function doAwardOther(mi,el){
   const m=state.members[mi];
   let reason=prompt(`✨ Extra star for ${m.name} — what was it for?`,"");
   if(reason===null)return;                     // cancelled
