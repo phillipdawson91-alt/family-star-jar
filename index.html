@@ -238,7 +238,7 @@
     .calhead .mlabel{font-size:1.4rem}
     .caldow span{font-size:.68rem}
   }
-</style>
+ .devtoggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:none;border:0;cursor:pointer;font-family:'Baloo 2',system-ui,sans-serif;font-size:1.02rem;font-weight:700;color:var(--ink);padding:5px 2px} .devtoggle .devsel{display:flex;align-items:center;gap:8px;color:var(--lapis);font-weight:800} .devtoggle .devchev{color:var(--muted);font-size:.8rem} .devbody{margin-top:12px} .dev.collapsed .devbody{display:none} </style>
 
 <div class="wrap">
   <header>
@@ -510,7 +510,7 @@ function dayOfYear(){const n=new Date();const cum=[0,31,60,91,121,152,182,213,24
 /* The date whose devotional is shown (defaults to today; resets on reload). */
 let viewDate=new Date(); viewDate.setHours(0,0,0,0);
 let calY=viewDate.getFullYear(), calM=viewDate.getMonth();
-let calOpen=false; /* calendar starts collapsed so it stays compact */
+let calOpen=false; let devOpen=true; /* calendar starts collapsed so it stays compact */
 /* 0-based slot into the 366-day set for any calendar date (leap-aware, matches dayOfYear). */
 function slotForDate(dt){const cum=[0,31,60,91,121,152,182,213,244,274,305,335];return cum[dt.getMonth()]+dt.getDate()-1;}
 function sameYMD(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
@@ -529,7 +529,7 @@ function renderDevo(){
   if(!d.body&&d.deeper)bodyHtml+=`<details class="deeper"><summary>Go deeper · for grown-ups</summary><p>${d.deeper}</p></details>`;
   const qs=d.questions?d.questions:(d.q?[d.q]:[]);
   const qHtml=qs.length?`<div class="qa"><b>Talk about it:</b><ul class="qlist">${qs.map(q=>`<li>${q}</li>`).join('')}</ul></div>`:'';
-  $("#dev").innerHTML=`<span class="illum">${d.L||'✦'}</span>
+  const dev=$("#dev"); dev.className='card dev'+(devOpen?'':' collapsed'); dev.innerHTML=`<button class="devtoggle" id="devToggle" aria-expanded="${devOpen}"><span>📖 Read together</span><span class="devsel">${d.ref}<span class="devchev">${devOpen?'▾':'▸'}</span></span></button> <div class="devbody"><span class="illum">${d.L||'✦'}</span>
     <div class="ref">${d.ref}</div><div class="scripture">${d.scripture}</div>
     ${bodyHtml}
     ${qHtml}
@@ -538,7 +538,7 @@ function renderDevo(){
       <button class="btn ghost sm" id="prevDevo">‹ Previous day</button>
       <button class="btn ghost sm" id="nextDevo">Next day ›</button>
       ${browsing?`<button class="btn ghost sm" id="todayDevo">↩ Back to today</button>`:''}
-      <button class="btn gold sm" id="aiDevo">✨ Make a new one with AI</button></div>`;
+      <button class="btn gold sm" id="aiDevo">✨ Make a new one with AI</button></div></div>`;  $("#devToggle").onclick=()=>{devOpen=!devOpen;renderDevo();};
   $("#prevDevo").onclick=()=>{state.custom=null;viewDate=addDays(viewDate,-1);calY=viewDate.getFullYear();calM=viewDate.getMonth();save();renderDevo();renderCal();};
   $("#nextDevo").onclick=()=>{state.custom=null;viewDate=addDays(viewDate,1);calY=viewDate.getFullYear();calM=viewDate.getMonth();save();renderDevo();renderCal();};
   if(browsing)$("#todayDevo").onclick=goToday;
