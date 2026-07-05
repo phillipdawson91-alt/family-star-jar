@@ -143,6 +143,15 @@
     display:grid;place-items:center;font-size:.8rem;box-shadow:0 2px 6px rgba(0,0,0,.25);z-index:3}
   .addtile{border:2px dashed var(--lapis);color:var(--lapis);justify-content:center;background:rgba(46,94,170,.04)}
   .addtile .ico,.addtile .cap{color:var(--lapis)}
+  .othertile{border:2px solid var(--gold);background:rgba(201,154,59,.12);justify-content:center}
+  .othertile .cap{color:#8a6a1f}
+  .othertile .ico{filter:none}
+  .extralog{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+  .extralog-h{font-size:.82rem;font-weight:800;color:#8a6a1f;margin-bottom:5px}
+  .extrarow{display:flex;align-items:center;gap:8px;font-size:.86rem;padding:5px 0;border-bottom:1px dotted var(--line)}
+  .extrarow:last-child{border-bottom:0}
+  .extrarow .extrar{flex:1;color:var(--ink);word-break:break-word}
+  .extrarow .extrad{color:var(--muted);font-size:.76rem;white-space:nowrap}
   .member.editing{outline:2px dashed var(--gold);outline-offset:3px}
   .pmbanner{position:fixed;left:0;right:0;bottom:0;z-index:150;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;
     background:linear-gradient(100deg,rgba(46,94,170,.96),rgba(156,43,59,.96));color:#fff;padding:12px 16px;font-weight:800;
@@ -508,13 +517,17 @@ function renderFamily(){
           ${parentMode?`<span class="tiledel" data-del="${mi}_${ti}" title="Delete">✕</span>`:''}
           <span class="badge">✓</span><span class="ico">${t.i}</span><span class="cap">${t.c}</span></div>`).join('')}
         ${parentMode?`<div class="tile addtile" data-add="${mi}"><span class="ico">＋</span><span class="cap">Add task</span></div>`:''}
+        ${parentMode?`<div class="tile othertile" data-other="${mi}"><span class="ico">✨</span><span class="cap">Other great things</span></div>`:''}
       </div>
+      ${parentMode&&Array.isArray(m.extras)&&m.extras.length?`<div class="extralog"><div class="extralog-h">✨ Other great things — ${m.extras.length} star${m.extras.length>1?'s':''}</div>${m.extras.map((x,xi)=>`<div class="extrarow"><span class="extrar">${escapeHtml(x.reason)}</span><span class="extrad">${new Date(x.ts).toLocaleDateString(undefined,{day:'numeric',month:'short'})}</span><button class="mini" data-xdel="${mi}_${xi}" title="Remove star">✕</button></div>`).join('')}</div>`:''}
     </div>`).join('');
   if(parentMode){
     document.querySelectorAll('.tile[data-t]').forEach(el=>el.onclick=()=>editTask(+el.dataset.m,+el.dataset.t));
     document.querySelectorAll('[data-del]').forEach(el=>el.onclick=e=>{e.stopPropagation();const p=el.dataset.del.split('_').map(Number);delTask(p[0],p[1]);});
     document.querySelectorAll('[data-add]').forEach(el=>el.onclick=()=>addTask(+el.dataset.add));
     document.querySelectorAll('[data-ren]').forEach(el=>el.onclick=()=>renameMember(+el.dataset.ren));
+    document.querySelectorAll('[data-other]').forEach(el=>el.onclick=()=>awardOther(+el.dataset.other,el));
+    document.querySelectorAll('[data-xdel]').forEach(el=>el.onclick=()=>{const p=el.dataset.xdel.split('_').map(Number);delExtra(p[0],p[1]);});
   }else{
     document.querySelectorAll('.tile[data-t]').forEach(el=>{el.onclick=e=>tap(+el.dataset.m,+el.dataset.t,e);});
   }
@@ -589,6 +602,35 @@ function addTask(mi){
 function renameMember(mi){
   const n=prompt("Name:",state.members[mi].name); if(n===null||!n.trim())return;
   state.members[mi].name=n.trim(); save(); renderFamily();
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+/* Parent-only "Other great things" award: requires a typed reason, gives a ⭐ (counts toward the jar), logs the reason. */
+function awardOther(mi,el){
+  if(!parentMode)return;                       // parent-lock: never from a child tap
+  const m=state.members[mi];
+  let reason=prompt(`✨ Extra star for ${m.name} — what was it for?`,"");
+  if(reason===null)return;                     // cancelled
+  reason=reason.trim();
+  while(!reason){                              // blank/whitespace rejected — must type a reason
+    reason=prompt("Please type a reason — it can't be blank:","");
+    if(reason===null)return;
+    reason=reason.trim();
+  }
+  m.stars+=1;                                  // award ⭐ to child (and the jar, which sums member.stars)
+  if(!Array.isArray(m.extras))m.extras=[];     // the "Other"/misc bucket
+  m.extras.push({reason:reason,ts:Date.now()});
+  save();
+  chime();
+  if(el){const r=el.getBoundingClientRect();flyStar(r.left+r.width/2,r.top);}
+  renderFamily(); renderJar();
+}
+function delExtra(mi,idx){
+  const m=state.members[mi];
+  if(!m.extras||!m.extras[idx])return;
+  if(!confirm(`Remove this star?\n\n“${m.extras[idx].reason}”`))return;
+  m.extras.splice(idx,1);
+  m.stars=Math.max(0,m.stars-1);
+  save(); renderFamily(); renderJar(false);
 }
 
 function tap(mi,ti,e){
