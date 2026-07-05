@@ -354,9 +354,16 @@ const DEFAULT_GOALS=[
 /* ---------- state ---------- */
 let state={members:null,prayers:null,goals:null,devoIndex:0,custom:null,sound:true};
 const KEY="familyBoard_v2";
-/* ===== PASTE YOUR APPS SCRIPT WEB APP URL BELOW (ends in /exec) ===== */
-const API="https://script.google.com/macros/s/AKfycbzHSzN5ap0UAb5q6y4fwJ4n-oetZY2deoEaQfbqXeXJ36JY_3SBloguiZLdCJmSZp920g/exec";
-/* =================================================================== */
+/* Old Google Apps Script backend retired (its reads were CORS-blocked). Sync now
+   runs through the Cloudflare Worker configured below. Leave API empty. */
+const API="";
+/* ===== SHARED SYNC — Cloudflare Worker + KV ================================
+   Leave url:"" and the app stays per-device (exactly today's behaviour: no sync).
+   After deploying the Worker (see sync/DEPLOY.md), set url to the Worker URL and
+   choose a shared secret + board id. Bake the SAME three values into EVERY family
+   device — they're what make all devices land on the one shared board. ========= */
+const SYNC={ url:"https://family-star-jar-sync.phillipdawson91.workers.dev", board:"dawson-family", secret:"xDCA4k6XHWAkp9MtW3et_uouzqW679EL" };
+const syncOn=()=>!!SYNC.url;
 const hasWS=typeof window.storage!=="undefined";
 
 /* Cross-origin read via JSONP (Apps Script sends no CORS header, so fetch-read is blocked) */
@@ -390,19 +397,88 @@ async function load(){
   if(typeof state.sound!=="boolean")state.sound=true;
   if(typeof state.outings!=="number")state.outings=0;
 }
-let saveTimer=null;
-async function save(){
-  const blob=JSON.stringify(state);
-  /* ALWAYS cache locally so a flaky backend never loses data */
-  try{localStorage.setItem(KEY,blob);}catch(e){}
-  if(hasWS){try{await window.storage.set(KEY,blob);}catch(e){}}
-  /* shared backend: fire-and-forget GET (no-cors), debounced so taps don't spam the sheet */
-  if(API){
-    clearTimeout(saveTimer);
-    saveTimer=setTimeout(()=>{
-      fetch(API+"?action=save&data="+encodeURIComponent(blob),{mode:"no-cors"}).catch(e=>{});
-    },600);
-  }
+/* ---------- persistence + shared sync ----------
+   saveLocal()  : offline cache (localStorage), always.
+   save()       : local + (if sync on) push STRUCTURAL board changes as a whole-doc putBoard.
+   commit(op)   : local + (if sync on) queue one ATOMIC op (star awards/toggles/resets).
+   When SYNC.url is empty, every path is localStorage-only — identical to today. */
+const QKEY="familyBoard_v2_queue";
+let opQueue=[], serverVersion=-1, lastSharedJson="", syncTimer=null, syncing=false;
+function genOpId(){return Math.random().toString(36).slice(2)+Date.now().toString(36);}
+function sharedBoard(){return {members:state.members,prayers:state.prayers,goals:state.goals,outings:state.outings,pin:state.pin||null};}
+function loadQueue(){try{opQueue=JSON.parse(localStorage.getItem(QKEY)||"[]")||[];}catch(e){opQueue=[];}}
+function saveQueue(){try{localStorage.setItem(QKEY,JSON.stringify(opQueue));}catch(e){}}
+function saveLocal(){const blob=JSON.stringify(state);try{localStorage.setItem(KEY,blob);}catch(e){}if(hasWS){try{window.storage.set(KEY,blob);}catch(e){}}}
+function save(){
+  saveLocal();
+  if(!syncOn())return;
+  const j=JSON.stringify(sharedBoard());
+  if(j===lastSharedJson)return;                 // shared board unchanged (e.g. devotional nav) -> no sync
+  lastSharedJson=j;
+  opQueue=opQueue.filter(o=>o.op!=="putBoard");  // collapse repeated structural saves
+  opQueue.push({op:"putBoard",id:genOpId(),board:JSON.parse(j)});
+  saveQueue(); scheduleSync();
+}
+function commit(op){
+  saveLocal();
+  if(!syncOn())return;
+  op.id=op.id||genOpId();
+  opQueue.push(op); saveQueue();
+  lastSharedJson=JSON.stringify(sharedBoard());   // keep diff-baseline in step with optimistic state
+  scheduleSync();
+}
+function apiUrl(path){return SYNC.url.replace(/\/$/,"")+path+"?board="+encodeURIComponent(SYNC.board);}
+async function apiGet(){
+  const r=await fetch(apiUrl("/board"),{headers:{"X-Board-Secret":SYNC.secret}});
+  if(!r.ok)throw new Error("GET "+r.status);
+  return r.json();
+}
+async function apiOp(op){
+  const r=await fetch(apiUrl("/op"),{method:"POST",headers:{"Content-Type":"application/json","X-Board-Secret":SYNC.secret},body:JSON.stringify(op)});
+  if(r.status>=400&&r.status<500&&r.status!==403){const e=new Error("op "+r.status);e.permanent=true;throw e;} // drop poison ops, but keep retrying on 403
+  if(!r.ok)throw new Error("op "+r.status);
+  return r.json();
+}
+function applyServer(board,version){
+  if(!board||version===serverVersion)return;
+  state.members=board.members; state.prayers=board.prayers||[]; state.goals=board.goals||[]; state.outings=board.outings||0;
+  if("pin" in board)state.pin=board.pin;
+  serverVersion=version; lastSharedJson=JSON.stringify(sharedBoard());
+  saveLocal();
+  renderFamily(); renderPrayers(); renderGoals(); renderJar(false);
+}
+async function seedIfEmpty(){
+  /* First device on a fresh shared board seeds it — the Worker forces a CLEAN slate
+     (stars 0, tasks unticked, extras empty, outings 0) but keeps names/tasks/PIN. */
+  try{const res=await apiOp({op:"seed",id:genOpId(),board:sharedBoard()}); if(res&&res.board)applyServer(res.board,res.version);}catch(e){}
+}
+async function syncCycle(){
+  if(!syncOn()||syncing)return;
+  syncing=true;
+  try{
+    while(opQueue.length){                        // 1) flush queued ops in order
+      const op=opQueue[0];
+      try{await apiOp(op);opQueue.shift();saveQueue();}
+      catch(e){if(e.permanent){opQueue.shift();saveQueue();continue;} syncing=false; return;} // offline -> keep optimistic local, retry later
+    }
+    const res=await apiGet();                     // 2) pull authoritative state
+    if(res.empty)await seedIfEmpty(); else applyServer(res.board,res.version);
+  }catch(e){/* offline: keep local */}
+  syncing=false;
+}
+function scheduleSync(){clearTimeout(syncTimer);syncTimer=setTimeout(syncCycle,250);}
+function startSync(){
+  if(!syncOn())return;
+  loadQueue(); syncCycle();
+  setInterval(syncCycle,5000);
+  window.addEventListener("online",syncCycle);
+}
+/* reset-all-stars — clean slate everywhere (optimistic local + atomic backend op) */
+function resetAllStars(){
+  state.members.forEach(m=>{m.stars=0;(m.tasks||[]).forEach(t=>t.done=false);m.extras=[];});
+  state.outings=0; jarWon=false;
+  commit({op:"resetAllStars"});
+  renderFamily(); renderJar(false);
 }
 const $=s=>document.querySelector(s);
 
@@ -590,9 +666,11 @@ function showPMBanner(){
   let b=$("#pmBanner");
   if(!b){b=document.createElement("div");b.id="pmBanner";b.className="pmbanner";document.body.appendChild(b);}
   b.innerHTML=`<span>⚙️ Parent Mode — tap a picture to edit it, ✕ to delete, ＋ to add.</span>
+    <button class="btn ghost sm" id="pmReset">Reset all stars</button>
     <button class="btn ghost sm" id="pmPinChg">Change PIN</button>
     <button class="btn gold sm" id="pmDone">Done</button>`;
   b.style.display="flex";
+  $("#pmReset").onclick=()=>{ if(confirm("Reset ALL stars to zero for everyone?\nTask ticks and the Other-great-things log are cleared too. This can't be undone.")) resetAllStars(); };
   $("#pmDone").onclick=exitParent;
   $("#pmPinChg").onclick=()=>{pinBuf="";pinStage="set1";pinFirst="";pinTitle="Set a new Parent PIN";pinSub="Pick 4 new numbers.";drawPin("");};
 }
@@ -633,8 +711,9 @@ function doAwardOther(mi,el){
   }
   m.stars+=1;                                  // award ⭐ to child (and the jar, which sums member.stars)
   if(!Array.isArray(m.extras))m.extras=[];     // the "Other"/misc bucket
-  m.extras.push({reason:reason,ts:Date.now()});
-  save();
+  const entryId=genOpId();
+  m.extras.push({id:entryId,reason:reason,ts:Date.now()});
+  commit({op:"award",memberId:mi,delta:1,source:"other",reason:reason,entryId:entryId});  // optimistic + atomic sync
   chime();
   if(el){const r=el.getBoundingClientRect();flyStar(r.left+r.width/2,r.top);}
   renderFamily(); renderJar();
@@ -643,9 +722,11 @@ function delExtra(mi,idx){
   const m=state.members[mi];
   if(!m.extras||!m.extras[idx])return;
   if(!confirm(`Remove this star?\n\n“${m.extras[idx].reason}”`))return;
+  const entryId=m.extras[idx].id;
   m.extras.splice(idx,1);
   m.stars=Math.max(0,m.stars-1);
-  save(); renderFamily(); renderJar(false);
+  commit({op:"removeExtra",memberId:mi,entryId:entryId});  // optimistic + atomic sync
+  renderFamily(); renderJar(false);
 }
 
 function tap(mi,ti,e){
@@ -654,7 +735,7 @@ function tap(mi,ti,e){
   state.members[mi].stars+=t.done?1:-1;
   if(state.members[mi].stars<0)state.members[mi].stars=0;
   if(t.done){chime();const r=e.currentTarget.getBoundingClientRect();flyStar(r.left+r.width/2,r.top);}
-  save();
+  commit({op:"toggleTask",memberId:mi,taskId:ti,done:t.done});   // optimistic local + atomic sync
   const el=e.currentTarget;el.classList.toggle('done',t.done);
   el.querySelector('.badge').style.display=t.done?'grid':'none';
   const sc=$("#score-"+mi);sc.textContent=state.members[mi].stars;sc.classList.remove('bumping');void sc.offsetWidth;sc.classList.add('bumping');
@@ -733,7 +814,8 @@ async function aiDevo(){
 
 (async function(){setDate();await load();$("#sound").textContent=state.sound?"🔊":"🔇";
   renderDevo();renderCal();renderFamily();renderPrayers();renderGoals();renderJar(false);
+  startSync();   /* pulls the shared board + polls, ONLY when SYNC.url is set */
   $("#claimBtn").onclick=()=>{state.outings++;state.members.forEach(m=>m.stars=0);jarWon=false;save();renderFamily();renderJar(false);celebrate();};
-  $("#newDayBtn").onclick=()=>{state.members.forEach(m=>m.tasks.forEach(t=>t.done=false));save();renderFamily();};
+  $("#newDayBtn").onclick=()=>{state.members.forEach(m=>m.tasks.forEach(t=>t.done=false));commit({op:"newDayReset"});renderFamily();};
 })();
 </script>
