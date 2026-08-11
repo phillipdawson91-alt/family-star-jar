@@ -3,52 +3,93 @@
 <title>The Dawsons' Faith Board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Figtree:wght@400;500;600;700;800&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%232A3763'/%3E%3Cstop offset='1' stop-color='%23141B34'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='114.5' fill='url(%23g)'/%3E%3Cpath d='M 256 109.978 L 294.204 200.243 L 391.857 208.683 L 317.815 272.910 L 339.964 368.392 L 256 317.821 L 172.036 368.392 L 194.185 272.910 L 120.143 208.683 L 217.796 200.243 Z' fill='%23F2A93B' stroke='%23F2A93B' stroke-width='25.4' stroke-linejoin='round'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#141B34">
 <style>
+  /* ==========================================================================
+     THE DAWSONS — BRAND TOKENS v1.0  (from brand/dawson-tokens.css)
+     Palette "Night & Gold" · Outfit / Figtree / Baloo 2 · 8-point spacing.
+     Change a colour here once and it changes everywhere on the board.
+     ======================================================================== */
   :root{
-    --parchment:#FBF7EF; --card:#FFFDF8; --ink:#38282C; --muted:#8A7A72;
-    --lapis:#2E5EAA; --garnet:#9C2B3B; --gold:#C99A3B; --gold-soft:#EFD9A6;
-    --sage:#5F7150; --line:#E9E0D0;
-    --shadow:0 2px 0 rgba(56,40,44,.05), 0 14px 34px -18px rgba(56,40,44,.4);
+    /* core palette */
+    --night:#141B34; --dusk:#2A3763; --gold:#F2A93B; --gold-deep:#9C6008;
+    --cream:#FBF8F3; --white:#FFFFFF; --stone:#666E85; --line:#E9E3D9;
+    --night-sky:linear-gradient(180deg,#2A3763 0%,#141B34 100%);
+    /* family colours — one per person, for life */
+    --daddy:#2F6BD4; --mummy:#C24571; --grace:#F2A93B; --alex:#287C5C;
+    --charlotte:#E8563C; --charlotte-text:#CC4429;
+    /* feedback — attention is for system errors only, never a child */
+    --positive:#267A55; --attention:#C2412B;
+    /* type */
+    --font-display:'Outfit',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --font-body:'Figtree',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --font-kid:'Baloo 2','Figtree',-apple-system,sans-serif;
+    /* shape */
+    --radius-btn:10px; --radius-card:18px; --radius-kid:24px; --radius-pill:999px;
+    --tap-min:64px;
+    --shadow:0 1px 2px rgba(20,27,52,.05), 0 8px 24px rgba(20,27,52,.10);
+
+    /* --- legacy aliases: the old names now point at the brand palette, so
+           every existing rule below inherits the rebrand automatically ----- */
+    --parchment:var(--cream); --card:var(--white); --ink:var(--night);
+    --muted:var(--stone); --lapis:var(--daddy); --garnet:var(--mummy);
+    --sage:var(--alex); --gold-soft:#FBE3B8;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--parchment);color:var(--ink);
-    font-family:'Baloo 2',system-ui,sans-serif;line-height:1.45;
-    background-image:radial-gradient(circle at 12% 8%, rgba(201,154,59,.06), transparent 40%),
-                     radial-gradient(circle at 88% 92%, rgba(46,94,170,.05), transparent 42%);}
+  body{margin:0;background:var(--cream);color:var(--night);
+    font-family:var(--font-body);line-height:1.6;-webkit-font-smoothing:antialiased;}
   .wrap{max-width:1060px;margin:0 auto;padding:20px 16px 90px}
 
-  header{position:relative;border-radius:22px;overflow:hidden;color:#fff;padding:24px 24px 22px;box-shadow:var(--shadow);
-    background:linear-gradient(115deg,var(--lapis) 0%, #2b4f8f 46%, var(--garnet) 100%);}
-  header::after{content:"";position:absolute;inset:0;opacity:.16;mix-blend-mode:overlay;
-    background:repeating-linear-gradient(60deg,#fff 0 2px,transparent 2px 26px),repeating-linear-gradient(-60deg,#fff 0 2px,transparent 2px 26px);}
-  header .eyebrow{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;opacity:.85;position:relative}
-  header h1{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(1.9rem,5vw,3rem);margin:.1em 0;line-height:1;position:relative}
-  header .verse{position:relative;font-style:italic;opacity:.95;max-width:46ch;margin-top:6px;font-family:'Fraunces',serif}
-  header .date{position:relative;margin-top:8px;font-weight:700;font-size:.9rem;opacity:.9}
-  .soundbtn{position:absolute;top:16px;right:16px;z-index:2;background:rgba(255,255,255,.2);color:#fff;border:none;
+  /* Header — the one gradient, vertical only, with the reversed lockup */
+  header{position:relative;border-radius:var(--radius-card);overflow:hidden;color:var(--cream);
+    padding:28px 24px 24px;box-shadow:var(--shadow);background:var(--night-sky);}
+  header .lockup{display:flex;align-items:center;gap:14px;position:relative;padding-right:96px}
+  header .lockup svg{width:46px;height:46px;flex:none}
+  header .wordmark{font-family:var(--font-display);font-weight:800;font-size:1.05rem;
+    letter-spacing:.22em;text-transform:uppercase;color:var(--cream)}
+  header .eyebrow{font-family:var(--font-display);font-size:.7rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--gold);font-weight:600;position:relative;margin-top:18px}
+  header h1{font-family:var(--font-display);font-weight:800;font-size:clamp(2rem,5.4vw,2.75rem);
+    margin:.08em 0 0;line-height:1.05;letter-spacing:-.03em;position:relative}
+  header .verse{position:relative;color:rgba(251,248,243,.82);max-width:52ch;margin-top:10px;
+    font-family:var(--font-body);font-weight:500;font-size:.98rem}
+  header .date{position:relative;margin-top:10px;font-weight:600;font-size:.88rem;color:var(--gold)}
+  .soundbtn{position:absolute;top:16px;right:16px;z-index:2;background:rgba(251,248,243,.14);color:var(--cream);border:none;
     width:40px;height:40px;border-radius:50%;font-size:1.1rem;cursor:pointer}
+  .soundbtn:hover{background:rgba(251,248,243,.26)}
+  @media(max-width:430px){
+    header .wordmark{font-size:.88rem;letter-spacing:.15em}
+    header .lockup{padding-right:88px;gap:10px}
+    header .lockup svg{width:38px;height:38px}
+  }
 
-  h2{font-family:'Fraunces',serif;font-weight:600;font-size:1.35rem;margin:30px 2px 12px;display:flex;align-items:center;gap:10px}
-  h2 .rule{flex:1;height:1px;background:var(--line)}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:20px}
+  h2{font-family:var(--font-display);font-weight:700;font-size:1.35rem;margin:36px 2px 12px;
+    display:flex;align-items:center;gap:12px;letter-spacing:-.02em}
+  h2 .rule{flex:1;height:2px;background:var(--gold);opacity:.55;border-radius:2px}
+  .card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow);padding:20px}
 
   /* Devotional */
   .dev{position:relative;overflow:hidden}
-  .dev .illum{float:left;font-family:'Fraunces',serif;font-weight:900;font-size:4.2rem;line-height:.8;color:var(--garnet);margin:2px 14px 0 0;text-shadow:1px 1px 0 var(--gold-soft)}
-  .dev .ref{font-weight:800;color:var(--lapis)}
-  .dev .scripture{font-family:'Fraunces',serif;font-size:1.12rem;margin:2px 0 12px}
-  .dev .qa{background:#FBF4E6;border:1px dashed var(--gold);border-radius:12px;padding:12px 14px;margin:0 0 10px}
-  .dev .qa b{color:var(--sage)}
-  .dev .pray{background:rgba(46,94,170,.06);border-left:3px solid var(--lapis);border-radius:0 10px 10px 0;padding:10px 14px}
-  .dev .pray b{color:var(--lapis)}
+  .dev .illum{float:left;font-family:var(--font-display);font-weight:800;font-size:4.2rem;line-height:.82;
+    color:var(--gold-deep);margin:2px 14px 0 0;letter-spacing:-.04em}
+  .dev .ref{font-family:var(--font-display);font-weight:700;color:var(--gold-deep);letter-spacing:.01em}
+  .dev .scripture{font-family:var(--font-display);font-weight:700;font-size:1.12rem;margin:2px 0 12px;letter-spacing:-.015em}
+  .dev .qa{background:#FCF6EC;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:0 12px 12px 0;padding:12px 14px;margin:0 0 10px}
+  .dev .qa b{color:var(--gold-deep)}
+  .dev .pray{background:rgba(42,55,99,.05);border-left:3px solid var(--dusk);border-radius:0 12px 12px 0;padding:10px 14px}
+  .dev .pray b{color:var(--dusk)}
   .dev-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 
-  button{font-family:inherit;font-weight:700;cursor:pointer;border-radius:999px;border:none;transition:transform .08s ease,filter .15s}
+  /* Buttons — one gold primary per view; secondary is a Night outline */
+  button{font-family:var(--font-body);font-weight:700;cursor:pointer;border-radius:var(--radius-btn);border:none;transition:transform .08s ease,filter .15s}
   button:active{transform:translateY(1px)}
-  .btn{background:var(--lapis);color:#fff;padding:10px 18px}
-  .btn.ghost{background:transparent;color:var(--lapis);border:2px solid var(--lapis)}
-  .btn.gold{background:var(--gold);color:#3a2b12}
+  .btn{background:var(--night);color:var(--cream);padding:10px 18px}
+  .btn.ghost{background:transparent;color:var(--night);border:1.5px solid var(--night)}
+  .btn.ghost:hover{background:rgba(20,27,52,.05)}
+  .btn.gold{background:var(--gold);color:var(--night)}
+  .btn.answered{background:rgba(38,122,85,.10);color:var(--positive);border:1.5px solid var(--positive)}
   .btn:hover{filter:brightness(1.06)}
   .btn.sm{padding:6px 14px;font-size:.9rem}
 
@@ -56,31 +97,35 @@
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
   .member{position:relative;padding-top:16px;overflow:visible}
   .member .top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
-  .monster{width:60px;height:60px;flex:none;border-radius:22px 22px 20px 20px;position:relative;box-shadow:inset 0 -6px 0 rgba(0,0,0,.08)}
-  .monster::before,.monster::after{content:"";position:absolute;top:16px;width:16px;height:16px;background:#fff;border-radius:50%}
-  .monster::before{left:11px} .monster::after{right:11px}
-  .monster .pupils{position:absolute;top:22px;left:0;right:0;display:flex;justify-content:space-between;padding:0 15px}
-  .monster .pupils i{width:6px;height:6px;background:#241a1c;border-radius:50%;display:block}
-  .monster .horns{position:absolute;top:-7px;left:0;right:0;display:flex;justify-content:space-between;padding:0 9px}
-  .monster .horns i{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:12px solid inherit}
-  .member .name{font-weight:800;font-size:1.3rem}
-  .member .age{font-size:.8rem;color:var(--muted);font-weight:700}
+  /* Star Buddies — the people layer. One star per Dawson, in their own colour. */
+  .buddy{width:60px;height:60px;flex:none;display:block}
+  .member .name{font-family:var(--font-display);font-weight:800;font-size:1.3rem;letter-spacing:-.02em}
+  .member .age{font-size:.8rem;color:var(--stone);font-weight:600}
+  /* Correction is spoken, never coloured — this chip is Night on Cream, never red. */
+  .member .ivbadge{margin-top:4px;display:inline-block;font-family:var(--font-display);font-size:.62rem;
+    font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-deep);
+    background:#FCF3E4;border:1px solid var(--line);border-radius:var(--radius-pill);padding:3px 10px;line-height:1.4}
   .scorepop{margin-left:auto;text-align:center;position:relative}
-  .scorepop .num{font-family:'Fraunces',serif;font-weight:900;font-size:1.9rem;line-height:1;color:var(--gold)}
-  .scorepop .lbl{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .scorepop .num{font-family:var(--font-display);font-weight:800;font-size:1.9rem;line-height:1;
+    color:var(--night);letter-spacing:-.03em}
+  .scorepop .lbl{font-family:var(--font-body);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--stone);font-weight:700}
 
+  /* Children's tiles — Baloo 2, 24px radius, a three-year-old's thumb is the constraint */
   .tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
-  .tile{display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 6px 10px;border-radius:14px;border:2px solid var(--line);
-    background:#fff;cursor:pointer;text-align:center;user-select:none;transition:transform .1s,border-color .15s,background .15s}
+  .tile{display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 6px 10px;border-radius:var(--radius-kid);border:2px solid var(--line);
+    background:var(--white);cursor:pointer;text-align:center;user-select:none;transition:transform .1s,border-color .15s,background .15s}
   .tile:hover{transform:translateY(-2px)}
   .tile .ico{font-size:1.8rem;line-height:1}
-  .tile .cap{font-size:.82rem;font-weight:700;color:var(--ink)}
-  .tile.done{background:#EAF3EA;border-color:var(--sage)}
+  .tile .cap{font-family:var(--font-kid);font-size:.95rem;font-weight:700;color:var(--night);line-height:1.2}
+  .tile .val{font-family:var(--font-display);font-size:.58rem;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--stone);margin-top:1px}
+  .tile.done{background:#EDF5F1;border-color:var(--positive)}
+  .tile.done .val{color:var(--positive)}
   .tile.done .ico{filter:none}
   .tile .check{position:absolute}
   .tile{position:relative}
-  .tile .badge{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;background:var(--sage);color:#fff;
-    display:none;place-items:center;font-size:.9rem;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+  .tile .badge{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;background:var(--positive);color:#fff;
+    display:none;place-items:center;font-size:.9rem;box-shadow:0 2px 6px rgba(20,27,52,.2)}
   .tile.done .badge{display:grid}
 
   .flystar{position:fixed;pointer-events:none;font-size:1.6rem;z-index:99;animation:fly 1s ease-out forwards}
@@ -91,72 +136,93 @@
   /* prayer + goals */
   .two{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
   @media(max-width:760px){.two{grid-template-columns:1fr}.tiles{grid-template-columns:1fr 1fr}}
-  .pcard input{width:100%;font-family:inherit;border:2px solid var(--line);border-radius:12px;padding:11px 13px;font-size:1rem;margin-bottom:8px}
+  .pcard input{width:100%;font-family:var(--font-body);border:1.5px solid var(--line);border-radius:var(--radius-btn);padding:11px 13px;font-size:1rem;margin-bottom:8px}
   .plist{list-style:none;margin:6px 0 0;padding:0}
-  .plist li{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px dashed var(--line)}
+  .plist li{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
   .plist li:first-child{border-top:none}
   .plist .txt{flex:1}
-  .plist li.answered .txt{color:var(--sage);font-style:italic}
-  .plist li.answered .txt::before{content:"✓ ";color:var(--gold);font-weight:800}
+  .plist li.answered .txt{color:var(--positive);font-style:italic}
+  .plist li.answered .txt::before{content:"✓ ";color:var(--positive);font-weight:800}
   .goal{margin-top:12px}
-  .goal .glabel{display:flex;justify-content:space-between;font-weight:700;font-size:.95rem;margin-bottom:5px}
-  .bar{height:14px;border-radius:99px;background:#eee;overflow:hidden}
-  .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--sage),var(--gold));border-radius:99px;transition:width .35s}
+  .goal .glabel{display:flex;justify-content:space-between;font-weight:600;font-size:.95rem;margin-bottom:5px}
+  .bar{height:14px;border-radius:var(--radius-pill);background:var(--line);overflow:hidden}
+  .bar>i{display:block;height:100%;background:var(--gold);border-radius:var(--radius-pill);transition:width .45s cubic-bezier(.2,.8,.2,1)}
   .goal .gbtns{display:flex;gap:6px;margin-top:6px}
-  .gbtns button{background:#fff;border:2px solid var(--line);color:var(--ink);padding:2px 16px;font-size:1rem;border-radius:10px}
-  .del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;opacity:.5}
-  .del:hover{opacity:1;color:var(--garnet)}
+  .gbtns button{background:var(--white);border:1.5px solid var(--line);color:var(--night);padding:2px 16px;font-size:1rem;border-radius:var(--radius-btn)}
+  .gbtns button:hover{border-color:var(--night)}
+  .del{background:none;border:none;color:var(--stone);cursor:pointer;font-size:1rem;opacity:.5}
+  .del:hover{opacity:1;color:var(--night)}
+  /* The Family Jar — the shared goal outranks any individual score */
   .jar{margin-top:16px}
-  .jarhead{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
-  .jartitle{font-family:'Fraunces',serif;font-weight:700;font-size:1.35rem}
-  .jarsub{color:var(--muted);font-weight:700;font-size:.9rem}
-  .jartrophy{margin-left:auto;font-weight:800;color:var(--gold);white-space:nowrap;font-size:.95rem}
-  .jarbar{position:relative;height:36px;border-radius:99px;background:#efe7d6;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,.08)}
-  .jarfill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:99px;transition:width .5s cubic-bezier(.4,1.4,.5,1);
-    background:linear-gradient(90deg,var(--sage),var(--gold));box-shadow:0 0 0 2px rgba(255,255,255,.4) inset}
-  .jarnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--ink);font-size:1rem;text-shadow:0 1px 0 rgba(255,255,255,.5)}
+  .jarhead{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .jarhead>div:first-child{flex:1 1 220px;min-width:0}
+  .jartitle{font-family:var(--font-display);font-weight:800;font-size:1.35rem;letter-spacing:-.02em;white-space:nowrap}
+  .jarsub{color:var(--stone);font-weight:500;font-size:.9rem}
+  .jartrophy{margin-left:auto;font-weight:700;color:var(--gold-deep);white-space:nowrap;font-size:.95rem}
+  .jarbar{position:relative;height:36px;border-radius:var(--radius-pill);background:var(--line);overflow:hidden}
+  .jarfill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:var(--radius-pill);
+    transition:width .45s cubic-bezier(.2,.8,.2,1);background:var(--gold)}
+  .jarnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-weight:800;color:var(--night);font-size:1rem;letter-spacing:-.01em}
   .jaractions{margin-top:10px}
   .jarBanner{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;margin-top:12px;
-    background:linear-gradient(100deg,rgba(95,113,80,.14),rgba(201,154,59,.2));border:2px dashed var(--gold);
-    border-radius:14px;padding:12px 14px;font-weight:800;color:var(--sage)}
+    background:var(--night-sky);border:none;border-radius:var(--radius-card);padding:14px 16px;
+    font-family:var(--font-display);font-weight:700;color:var(--cream)}
   .confetti{position:fixed;top:-30px;z-index:120;pointer-events:none;animation:fall 2.4s ease-in forwards}
   @keyframes fall{to{transform:translateY(108vh) rotate(360deg);opacity:.2}}
-  .empty{color:var(--muted);font-style:italic;padding:8px 0}
-  .footnote{text-align:center;color:var(--muted);font-size:.85rem;margin-top:34px}
-  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  .empty{color:var(--stone);font-style:italic;padding:8px 0}
+  .footnote{text-align:center;color:var(--stone);font-size:.85rem;margin-top:34px}
+  .footnote b{font-family:var(--font-display);font-weight:700;color:var(--gold-deep)}
+
+  /* House rules — the five points, in child */
+  .houserules{margin-top:18px;background:var(--night-sky);color:var(--cream);
+    border-radius:var(--radius-card);padding:22px 24px;box-shadow:var(--shadow)}
+  .houserules .hr-h{font-family:var(--font-display);font-weight:600;font-size:.7rem;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+  .hr-list{list-style:none;counter-reset:hr;margin:0;padding:0;display:grid;gap:10px;
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+  .hr-list li{counter-increment:hr;display:block}
+  .hr-list li::before{content:counter(hr,decimal-leading-zero) " ";font-family:var(--font-display);
+    font-weight:800;font-size:.68rem;color:var(--gold);letter-spacing:.02em}
+  .hr-list b{font-family:var(--font-display);font-weight:700;color:var(--gold);
+    font-size:.68rem;letter-spacing:.16em;text-transform:uppercase}
+  .hr-list span{display:block;margin-top:2px}
+  .hr-list span{font-family:var(--font-kid);font-weight:600;font-size:1.06rem;color:var(--cream);line-height:1.3}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(20,27,52,.25);border-top-color:var(--night);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
   @keyframes sp{to{transform:rotate(360deg)}}
 
   /* ---- Parent Mode ---- */
   .gearbtn{right:64px;font-size:1rem}
-  .modal{position:fixed;inset:0;background:rgba(40,28,32,.55);display:grid;place-items:center;z-index:200;padding:16px}
-  .sheet{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:22px;max-width:340px;width:100%;text-align:center}
-  .sheet h3{font-family:'Fraunces',serif;margin:.1em 0;font-size:1.3rem;color:var(--ink)}
-  .sheet p{color:var(--muted);font-weight:600;margin:.2em 0 1em;font-size:.92rem}
-  .pindisp{font-size:1.6rem;height:1.8rem;margin-bottom:14px;color:var(--lapis);font-weight:800}
+  .modal{position:fixed;inset:0;background:rgba(20,27,52,.6);display:grid;place-items:center;z-index:200;padding:16px}
+  .sheet{background:var(--white);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow);padding:22px;max-width:340px;width:100%;text-align:center}
+  .sheet h3{font-family:var(--font-display);font-weight:800;margin:.1em 0;font-size:1.3rem;color:var(--night);letter-spacing:-.02em}
+  .sheet p{color:var(--stone);font-weight:500;margin:.2em 0 1em;font-size:.92rem}
+  .pindisp{font-family:var(--font-display);font-size:1.6rem;height:1.8rem;margin-bottom:14px;color:var(--night);font-weight:800}
   .pinpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .pinkey{background:#fff;border:2px solid var(--line);border-radius:14px;padding:16px 0;font-size:1.35rem;font-weight:800;color:var(--ink)}
-  .pinkey:hover{border-color:var(--lapis)}
-  .msg{color:var(--garnet);font-weight:700;min-height:1.2em;font-size:.85rem;margin-top:10px}
+  .pinkey{background:var(--white);border:1.5px solid var(--line);border-radius:var(--radius-btn);padding:16px 0;
+    font-family:var(--font-display);font-size:1.35rem;font-weight:700;color:var(--night)}
+  .pinkey:hover{border-color:var(--night)}
+  .msg{color:var(--attention);font-weight:600;min-height:1.2em;font-size:.85rem;margin-top:10px}
   .mini{background:none;border:none;font-size:.9rem;cursor:pointer;padding:0 2px;vertical-align:1px}
   .tile.edit{border-style:dashed}
-  .tiledel{position:absolute;top:-8px;left:-8px;width:24px;height:24px;border-radius:50%;background:var(--garnet);color:#fff;
-    display:grid;place-items:center;font-size:.8rem;box-shadow:0 2px 6px rgba(0,0,0,.25);z-index:3}
-  .addtile{border:2px dashed var(--lapis);color:var(--lapis);justify-content:center;background:rgba(46,94,170,.04)}
-  .addtile .ico,.addtile .cap{color:var(--lapis)}
-  .othertile{border:2px solid var(--gold);background:rgba(201,154,59,.12);justify-content:center}
-  .othertile .cap{color:#8a6a1f}
+  .tiledel{position:absolute;top:-8px;left:-8px;width:24px;height:24px;border-radius:50%;background:var(--night);color:var(--cream);
+    display:grid;place-items:center;font-size:.8rem;box-shadow:0 2px 6px rgba(20,27,52,.25);z-index:3}
+  .addtile{border:2px dashed var(--stone);color:var(--stone);justify-content:center;background:rgba(102,110,133,.04)}
+  .addtile .ico,.addtile .cap{color:var(--stone)}
+  .othertile{border:2px solid var(--gold);background:rgba(242,169,59,.12);justify-content:center}
+  .othertile .cap{color:var(--gold-deep)}
   .othertile .ico{filter:none}
-  .extralog{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
-  .extralog-h{font-size:.82rem;font-weight:800;color:#8a6a1f;margin-bottom:5px}
-  .extrarow{display:flex;align-items:center;gap:8px;font-size:.86rem;padding:5px 0;border-bottom:1px dotted var(--line)}
+  .extralog{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+  .extralog-h{font-size:.82rem;font-weight:700;color:var(--gold-deep);margin-bottom:5px}
+  .extrarow{display:flex;align-items:center;gap:8px;font-size:.86rem;padding:5px 0;border-bottom:1px solid var(--line)}
   .extrarow:last-child{border-bottom:0}
   .extrarow .extrar{flex:1;color:var(--ink);word-break:break-word}
   .extrarow .extrad{color:var(--muted);font-size:.76rem;white-space:nowrap}
   .member.editing{outline:2px dashed var(--gold);outline-offset:3px}
   .pmbanner{position:fixed;left:0;right:0;bottom:0;z-index:150;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;
-    background:linear-gradient(100deg,rgba(46,94,170,.96),rgba(156,43,59,.96));color:#fff;padding:12px 16px;font-weight:800;
-    box-shadow:0 -6px 20px -8px rgba(0,0,0,.4)}
-  .pmbanner .btn.gold{background:var(--gold)} .pmbanner .btn.ghost{border-color:#fff;color:#fff}
+    background:var(--night);color:var(--cream);padding:12px 16px;font-weight:700;
+    box-shadow:0 -6px 20px -8px rgba(20,27,52,.5)}
+  .pmbanner .btn.gold{background:var(--gold);color:var(--night)} .pmbanner .btn.ghost{border-color:var(--cream);color:var(--cream)}
 
   /* ===== Kid-friendly "Skylight" pass — bigger, calmer, more tappable ===== */
   body{font-size:1.06rem}
@@ -167,8 +233,8 @@
   .dev .scripture{font-size:1.3rem;line-height:1.5}
   .dev .reflect{font-size:1.14rem;line-height:1.62}
   .dev .qa,.dev .pray{font-size:1.06rem;padding:14px 16px}
-  .deeper{margin:2px 0 14px;border-left:3px solid var(--gold);background:rgba(201,154,59,.07);border-radius:0 12px 12px 0;padding:6px 16px}
-  .deeper summary{cursor:pointer;font-weight:800;color:var(--gold);font-size:.95rem;list-style:none;padding:6px 0}
+  .deeper{margin:2px 0 14px;border-left:3px solid var(--gold);background:rgba(242,169,59,.08);border-radius:0 12px 12px 0;padding:6px 16px}
+  .deeper summary{cursor:pointer;font-weight:700;color:var(--gold-deep);font-size:.95rem;list-style:none;padding:6px 0}
   .deeper summary::-webkit-details-marker{display:none}
   .deeper summary::before{content:"▸ "}
   .deeper[open] summary::before{content:"▾ "}
@@ -179,12 +245,12 @@
   /* Bigger star tiles for little fingers */
   .grid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px}
   .tiles{gap:12px}
-  .tile{padding:18px 8px 16px;border-radius:18px;border-width:3px;min-height:108px;justify-content:center}
+  .tile{padding:18px 8px 16px;border-radius:var(--radius-kid);border-width:2px;min-height:var(--tap-min);justify-content:center}
   .tile .ico{font-size:2.5rem}
-  .tile .cap{font-size:1rem;line-height:1.15}
+  .tile .cap{font-size:1.25rem;line-height:1.15}   /* Baloo 2 never below 20px */
   .tile .badge{width:30px;height:30px;font-size:1.1rem;top:-10px;right:-10px}
-  /* Bigger avatars & scores */
-  .monster{width:74px;height:74px}
+  /* Bigger buddies & scores */
+  .buddy{width:74px;height:74px}
   .member .name{font-size:1.5rem}
   .scorepop .num{font-size:2.4rem}
   .scorepop .lbl{font-size:.68rem}
@@ -205,60 +271,64 @@
   /* ---- devotional calendar ---- */
   .cal{padding:12px 16px}
   .caltoggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
-    background:none;border:0;cursor:pointer;font-family:'Baloo 2',system-ui,sans-serif;font-size:1.02rem;font-weight:700;color:var(--ink);padding:5px 2px}
-  .caltoggle .calsel{display:flex;align-items:center;gap:8px;color:var(--lapis);font-weight:800}
+    background:none;border:0;cursor:pointer;font-family:var(--font-display);font-size:1.02rem;font-weight:700;color:var(--night);padding:5px 2px}
+  .caltoggle .calsel{display:flex;align-items:center;gap:8px;color:var(--gold-deep);font-weight:700}
   .caltoggle .calchev{color:var(--muted);font-size:.8rem}
   .calbody{margin-top:12px}
   .cal.collapsed .calbody{display:none}
   .calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-  .calhead .mlabel{font-family:'Fraunces',serif;font-weight:700;font-size:1.25rem;color:var(--ink)}
+  .calhead .mlabel{font-family:var(--font-display);font-weight:800;font-size:1.25rem;color:var(--night);letter-spacing:-.02em}
   .calnav{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);
-    font-size:1.4rem;line-height:1;color:var(--lapis);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
-  .calnav:hover{background:#FBF4E6}
+    font-size:1.4rem;line-height:1;color:var(--night);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .calnav:hover{background:var(--cream)}
   .calnav:active{transform:scale(.94)}
   .caldow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
   .caldow span{text-align:center;font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
   .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
-  .calcell{height:40px;border:1px solid var(--line);border-radius:10px;background:var(--card);
-    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.98rem;color:var(--ink);
+  .calcell{height:40px;border:1px solid var(--line);border-radius:10px;background:var(--white);
+    display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:.98rem;color:var(--night);
     cursor:pointer;user-select:none;transition:transform .05s,background .1s}
-  .calcell:hover{background:#FBF4E6}
+  .calcell:hover{background:var(--cream)}
   .calcell:active{transform:scale(.92)}
   .calcell.empty{border:0;background:transparent;cursor:default}
-  .calcell.today{border:2px solid var(--gold);box-shadow:0 0 0 3px var(--gold-soft) inset}
-  .calcell.sel{background:var(--lapis);color:#fff;border-color:var(--lapis)}
-  .calcell.today.sel{background:var(--garnet);border-color:var(--gold);color:#fff}
+  .calcell.today{border:2px solid var(--gold);box-shadow:0 0 0 3px rgba(242,169,59,.28) inset}
+  .calcell.sel{background:var(--night);color:var(--cream);border-color:var(--night)}
+  .calcell.today.sel{background:var(--dusk);border-color:var(--gold);color:var(--cream)}
   .callegend{display:flex;gap:18px;justify-content:center;margin-top:14px;font-size:.82rem;color:var(--muted);flex-wrap:wrap}
   .callegend i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px;box-sizing:border-box}
   .callegend .lg-today{border:2px solid var(--gold);background:var(--gold-soft)}
-  .callegend .lg-sel{background:var(--lapis)}
+  .callegend .lg-sel{background:var(--night)}
   @media(max-width:760px){
     .calcell{height:46px;font-size:1.08rem;border-radius:12px}
     .calnav{width:46px;height:46px;font-size:1.5rem}
     .calhead .mlabel{font-size:1.4rem}
     .caldow span{font-size:.68rem}
   }
- .devtoggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:none;border:0;cursor:pointer;font-family:'Baloo 2',system-ui,sans-serif;font-size:1.02rem;font-weight:700;color:var(--ink);padding:5px 2px} .devtoggle .devsel{display:flex;align-items:center;gap:8px;color:var(--lapis);font-weight:800} .devtoggle .devchev{color:var(--muted);font-size:.8rem} .devbody{margin-top:12px} .dev.collapsed .devbody{display:none} </style>
+ .devtoggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:none;border:0;cursor:pointer;font-family:var(--font-display);font-size:1.02rem;font-weight:700;color:var(--night);padding:5px 2px} .devtoggle .devsel{display:flex;align-items:center;gap:8px;color:var(--gold-deep);font-weight:700} .devtoggle .devchev{color:var(--muted);font-size:.8rem} .devbody{margin-top:12px} .dev.collapsed .devbody{display:none} </style>
 
 <div class="wrap">
   <header>
     <button class="soundbtn" id="sound" title="Sound on/off">🔊</button>
     <button class="soundbtn gearbtn" id="gear" title="Parent settings">⚙️</button>
-    <div class="eyebrow">Walk together · Serve together · Grow together</div>
-    <h1>The Dawsons' Faith Board</h1>
-    <div class="verse">"As for me and my house, we will serve the Lord." — Joshua 24:15</div>
+    <div class="lockup">
+      <svg viewBox="0 0 120 120" role="img" aria-label="The Dawsons star mark"><path d="M 60 10.32 L 72.998 41.03 L 106.221 43.902 L 81.031 65.753 L 88.566 98.238 L 60 81.033 L 31.434 98.238 L 38.969 65.753 L 13.779 43.902 L 47.002 41.03 Z" fill="#F2A93B" stroke="#F2A93B" stroke-width="8.64" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      <span class="wordmark">The Dawsons</span>
+    </div>
+    <div class="eyebrow">Shine together</div>
+    <h1>The Faith Board</h1>
+    <div class="verse">“As for me and my household, we will serve the Lord.” — Joshua 24:15</div>
     <div class="date" id="today"></div>
   </header>
 
   <div class="card jar">
     <div class="jarhead">
-      <div><div class="jartitle">🫙 Family Star Jar</div><div class="jarsub">Fill it to 100 stars for a family outing — ice cream &amp; a café! 🍦☕</div></div>
+      <div><div class="jartitle">🫙 The Star Jar</div><div class="jarsub">100 stars together and we all go out — ice cream &amp; a café. 🍦☕</div></div>
       <div class="jartrophy" id="jarTrophy"></div>
     </div>
-    <div class="jarbar"><i class="jarfill" id="jarFill"></i><span class="jarnum"><b id="jarCount">0</b> / 100 ⭐</span></div>
+    <div class="jarbar"><i class="jarfill" id="jarFill"></i><span class="jarnum"><b id="jarCount">0</b>&nbsp;/&nbsp;100&nbsp;⭐</span></div>
     <div class="jaractions"><button class="btn ghost sm" id="newDayBtn">🌅 New day (keep our stars)</button></div>
     <div class="jarBanner" id="jarBanner" style="display:none">
-      <span>🎉 We hit 100 stars! Family outing time — ice cream &amp; a café! 🍦☕</span>
+      <span>🎉 One hundred. We did that together. Get your coats. 🍦☕</span>
       <button class="btn gold sm" id="claimBtn">We did it! Start a new jar</button>
     </div>
   </div>
@@ -267,8 +337,18 @@
   <div class="card cal" id="cal"></div>
   <div class="card dev" id="dev"></div>
 
-  <h2>🌟 Star Points — tap when you do a good thing! <span class="rule"></span></h2>
+  <h2>🌟 Star Points — tap when somebody shines <span class="rule"></span></h2>
   <div class="grid" id="family"></div>
+  <div class="houserules" id="houseRules">
+    <div class="hr-h">The five points</div>
+    <ol class="hr-list">
+      <li><b>Honour</b><span>We listen the first time.</span></li>
+      <li><b>Kindness</b><span>We are kind before we are right.</span></li>
+      <li><b>Courage</b><span>We try the hard thing.</span></li>
+      <li><b>Joy</b><span>We laugh loudly and often.</span></li>
+      <li><b>Faith</b><span>We pray about everything.</span></li>
+    </ol>
+  </div>
 
   <div class="two">
     <div>
@@ -284,7 +364,7 @@
     </div>
   </div>
 
-  <p class="footnote">Tap a picture to earn a ⭐ · your board saves by itself · made together with AI</p>
+  <p class="footnote">Tap a picture to earn a ⭐ · your board saves by itself · <b>Shine together.</b></p>
   <!-- build: calendar-compact -->
 
 </div>
@@ -327,23 +407,79 @@ const DEVOS=[
 
 /* ---------- family (Dojo-style) ---------- */
 const DEFAULT_MEMBERS=[
- {name:"Mummy",age:"",colour:"#9C2B3B",stars:0,tasks:[
+ {name:"Mummy",age:"",colour:"#C24571",stars:0,tasks:[
    {i:"📖",c:"Bible story",done:false},{i:"💛",c:"Praise good behaviour",done:false},
    {i:"🙏",c:"Lead a prayer",done:false},{i:"📅",c:"Plan tomorrow",done:false}]},
- {name:"Daddy",age:"",colour:"#2E5EAA",stars:0,tasks:[
+ {name:"Daddy",age:"",colour:"#2F6BD4",stars:0,tasks:[
    {i:"🙏",c:"Family prayer",done:false},{i:"💬",c:"Encourage each child",done:false},
    {i:"🧹",c:"Help at home",done:false},{i:"❤️",c:"Cuddle time",done:false}]},
- {name:"Grace",age:"5",colour:"#7A5AA6",stars:0,tasks:[
+ {name:"Grace",age:"5",colour:"#F2A93B",stars:0,tasks:[
    {i:"🙏",c:"Say my prayer",done:false},{i:"👂",c:"Obey first time",done:false},
    {i:"🧸",c:"Tidy my toys",done:false},{i:"💛",c:"Be kind",done:false},
    {i:"🪥",c:"Brush teeth",done:false},{i:"🙏",c:"Say thank you",done:false}]},
- {name:"Alex",age:"3",colour:"#2E8B72",stars:0,tasks:[
+ {name:"Alex",age:"3",colour:"#287C5C",stars:0,tasks:[
    {i:"🙏",c:"Pray with me",done:false},{i:"🤝",c:"Share toys",done:false},
    {i:"👟",c:"Shoes away",done:false},{i:"😊",c:"Say please",done:false}]},
- {name:"Charlotte",age:"1",colour:"#E08D2E",stars:0,tasks:[
+ {name:"Charlotte",age:"1",colour:"#E8563C",stars:0,tasks:[
    {i:"😊",c:"Big smiles",done:false},{i:"🤗",c:"Cuddles",done:false},
    {i:"🍎",c:"Eat some lunch",done:false},{i:"😴",c:"Nap time",done:false}]}
 ];
+
+/* ===== INTERVENTION MODE =================================================
+   A focused season: the children listen first time and honour Mummy and Daddy.
+   While INTERVENTION is true, each child's board shows ONLY the tiles below —
+   nothing else earns a star (the ✨ "Other great things" parent award still
+   works, and Mummy & Daddy's own tiles are untouched).
+
+   TO TURN IT OFF: change the next line to  const INTERVENTION=false;
+   Their normal tiles come straight back. Stars are never lost either way. */
+const INTERVENTION=true;
+/* Every star is nameable as one of the five points: Honour, Kindness, Courage, Joy, Faith. */
+const INTERVENTION_TASKS={
+  "Grace":[{i:"👂",c:"I listened first time",v:"Honour"},{i:"🌙",c:"Bedtime, no fuss",v:"Honour"}],
+  "Alex":[{i:"👂",c:"I listened first time",v:"Honour"},{i:"🚽",c:"Poo in the toilet",v:"Courage"}],
+  "Charlotte":[{i:"👂",c:"I listened first time",v:"Honour"}]
+};
+/* Their everyday tiles, kept safe here so switching back is one line. */
+const NORMAL_TASKS={
+  "Grace":[{i:"🙏",c:"Say my prayer",v:"Faith"},{i:"👂",c:"I listened first time",v:"Honour"},
+           {i:"🧸",c:"Tidy my toys",v:"Kindness"},{i:"💛",c:"Be kind",v:"Kindness"},
+           {i:"🪥",c:"Brush teeth",v:"Courage"},{i:"🙏",c:"Say thank you",v:"Joy"}],
+  "Alex":[{i:"🙏",c:"Pray with me",v:"Faith"},{i:"🤝",c:"Share toys",v:"Kindness"},
+          {i:"👟",c:"Shoes away",v:"Honour"},{i:"😊",c:"Say please",v:"Kindness"}],
+  "Charlotte":[{i:"😊",c:"Big smiles",v:"Joy"},{i:"🤗",c:"Cuddles",v:"Kindness"},
+               {i:"🍎",c:"Eat some lunch",v:"Courage"},{i:"😴",c:"Nap time",v:"Honour"}]
+};
+/* Brand family colours — one per person, for life (brand guidelines §05). */
+const BRAND_COLOURS={Daddy:"#2F6BD4",Mummy:"#C24571",Grace:"#F2A93B",Alex:"#287C5C",Charlotte:"#E8563C"};
+const lockedChild=name=>Object.prototype.hasOwnProperty.call(INTERVENTION_TASKS,name);
+/* Force each child's tiles AND everyone's brand colour to match. Idempotent and
+   self-healing: if an older phone pushes stale tiles up to the shared board, the next
+   device to look simply puts them back. Ticks already given today are preserved by
+   caption, and stars are NEVER touched. Returns true if anything actually changed. */
+function applyTaskset(){
+  const target=INTERVENTION?INTERVENTION_TASKS:NORMAL_TASKS;
+  let changed=false;
+  (state.members||[]).forEach(m=>{
+    const brand=BRAND_COLOURS[m.name];
+    if(brand&&m.colour!==brand){m.colour=brand;changed=true;}
+    const want=target[m.name]; if(!want)return;
+    const cur=m.tasks||[];
+    const same=cur.length===want.length&&want.every((t,i)=>cur[i]&&cur[i].i===t.i&&cur[i].c===t.c&&cur[i].v===t.v);
+    if(same)return;
+    const wasDone={}; cur.forEach(t=>{if(t.done)wasDone[t.c]=true;});
+    m.tasks=want.map(t=>({i:t.i,c:t.c,v:t.v,done:!!wasDone[t.c]}));
+    changed=true;
+  });
+  return changed;
+}
+/* A Star Buddy: the family star mark with a face, in that person's colour. */
+function buddySVG(colour,name){
+  return `<svg class="buddy" viewBox="0 0 120 120" role="img" aria-label="${name} star buddy">`+
+    `<path d="M 60 12.16 L 72.516 41.733 L 104.509 44.498 L 80.252 65.54 L 87.508 96.822 L 60 80.254 L 32.492 96.822 L 39.748 65.54 L 15.491 44.498 L 47.484 41.733 Z" fill="${colour}" stroke="${colour}" stroke-width="8.32" stroke-linejoin="round" stroke-linecap="round"/>`+
+    `<circle cx="47.52" cy="56.88" r="5.98" fill="#141B34"/><circle cx="72.48" cy="56.88" r="5.98" fill="#141B34"/>`+
+    `<path d="M 46.48 66.76 Q 60 79.24 73.52 66.76" fill="none" stroke="#141B34" stroke-width="4.42" stroke-linecap="round"/></svg>`;
+}
 const DEFAULT_PRAYERS=[{txt:"Thank You God for our family",answered:false}];
 const DEFAULT_GOALS=[
  {name:"Read a Bible story together",done:3,target:7},
@@ -396,6 +532,7 @@ async function load(){
    if(state.devoDay!==_dy){state.devoDay=_dy;state.devoIndex=0;state.custom=null;}}
   if(typeof state.sound!=="boolean")state.sound=true;
   if(typeof state.outings!=="number")state.outings=0;
+  applyTaskset();   /* children's tiles always match the current mode */
 }
 /* ---------- persistence + shared sync ----------
    saveLocal()  : offline cache (localStorage), always.
@@ -444,7 +581,9 @@ function applyServer(board,version){
   state.members=board.members; state.prayers=board.prayers||[]; state.goals=board.goals||[]; state.outings=board.outings||0;
   if("pin" in board)state.pin=board.pin;
   serverVersion=version; lastSharedJson=JSON.stringify(sharedBoard());
+  const fixed=applyTaskset();   /* keep every device on the current tile set */
   saveLocal();
+  if(fixed)save();              /* push the corrected tiles back to the shared board */
   renderFamily(); renderPrayers(); renderGoals(); renderJar(false);
 }
 async function seedIfEmpty(){
@@ -580,25 +719,31 @@ function renderCal(){
 }
 
 function renderFamily(){
-  $("#family").innerHTML=state.members.map((m,mi)=>`
+  $("#family").innerHTML=state.members.map((m,mi)=>{
+   const locked=INTERVENTION&&lockedChild(m.name);   /* tiles fixed while intervention is on */
+   return `
     <div class="card member ${parentMode?'editing':''}">
       <div class="top">
-        <div class="monster" style="background:${m.colour}"><span class="pupils"><i></i><i></i></span>
-          <span class="horns" style="color:${m.colour}"><i style="border-bottom-color:${m.colour}"></i><i style="border-bottom-color:${m.colour}"></i></span></div>
-        <div><div class="name">${m.name}${parentMode?` <button class="mini" data-ren="${mi}" title="Rename">✏️</button>`:''}</div>${m.age?`<div class="age">${m.age} years old</div>`:''}</div>
+        ${buddySVG(m.colour,m.name)}
+        <div><div class="name">${m.name}${parentMode?` <button class="mini" data-ren="${mi}" title="Rename">✏️</button>`:''}</div>${m.age?`<div class="age">${m.age} years old</div>`:''}${locked?`<div class="ivbadge">House rule 01</div>`:''}</div>
         <div class="scorepop"><div class="num" id="score-${mi}">${m.stars}</div><div class="lbl">stars</div></div>
       </div>
       <div class="tiles">
-        ${m.tasks.map((t,ti)=>`<div class="tile ${t.done?'done':''} ${parentMode?'edit':''}" data-m="${mi}" data-t="${ti}">
-          ${parentMode?`<span class="tiledel" data-del="${mi}_${ti}" title="Delete">✕</span>`:''}
-          <span class="badge">✓</span><span class="ico">${t.i}</span><span class="cap">${t.c}</span></div>`).join('')}
-        ${parentMode?`<div class="tile addtile" data-add="${mi}"><span class="ico">＋</span><span class="cap">Add task</span></div>`:''}
+        ${m.tasks.map((t,ti)=>`<div class="tile ${t.done?'done':''} ${parentMode&&!locked?'edit':''}" data-m="${mi}" data-t="${ti}">
+          ${parentMode&&!locked?`<span class="tiledel" data-del="${mi}_${ti}" title="Delete">✕</span>`:''}
+          <span class="badge">✓</span><span class="ico">${t.i}</span><span class="cap">${t.c}</span>${t.v?`<span class="val">${t.v}</span>`:''}</div>`).join('')}
+        ${parentMode&&!locked?`<div class="tile addtile" data-add="${mi}"><span class="ico">＋</span><span class="cap">Add task</span></div>`:''}
         <div class="tile othertile" data-other="${mi}"><span class="ico">✨</span><span class="cap">Other great things</span></div>
       </div>
       ${parentMode&&Array.isArray(m.extras)&&m.extras.length?`<div class="extralog"><div class="extralog-h">✨ Other great things — ${m.extras.length} star${m.extras.length>1?'s':''}</div>${m.extras.map((x,xi)=>`<div class="extrarow"><span class="extrar">${escapeHtml(x.reason)}</span><span class="extrad">${new Date(x.ts).toLocaleDateString(undefined,{day:'numeric',month:'short'})}</span><button class="mini" data-xdel="${mi}_${xi}" title="Remove star">✕</button></div>`).join('')}</div>`:''}
-    </div>`).join('');
+    </div>`;}).join('');
   if(parentMode){
-    document.querySelectorAll('.tile[data-t]').forEach(el=>el.onclick=()=>editTask(+el.dataset.m,+el.dataset.t));
+    /* locked children keep tapping stars even in Parent Mode — their tiles aren't editable */
+    document.querySelectorAll('.tile[data-t]').forEach(el=>{
+      const mi=+el.dataset.m;
+      if(INTERVENTION&&lockedChild(state.members[mi].name)){el.onclick=e=>tap(mi,+el.dataset.t,e);}
+      else{el.onclick=()=>editTask(mi,+el.dataset.t);}
+    });
     document.querySelectorAll('[data-del]').forEach(el=>el.onclick=e=>{e.stopPropagation();const p=el.dataset.del.split('_').map(Number);delTask(p[0],p[1]);});
     document.querySelectorAll('[data-add]').forEach(el=>el.onclick=()=>addTask(+el.dataset.add));
     document.querySelectorAll('[data-ren]').forEach(el=>el.onclick=()=>renameMember(+el.dataset.ren));
@@ -767,7 +912,7 @@ function renderPrayers(){
   if(!state.prayers.length){ul.innerHTML=`<li class="empty">No prayers yet — add the first one above.</li>`;return;}
   ul.innerHTML=state.prayers.map((p,i)=>`<li class="${p.answered?'answered':''}">
     <span class="txt">${p.txt}</span>
-    <button class="btn ${p.answered?'gold':'ghost'} sm" data-ans="${i}">${p.answered?'Answered!':'Mark answered'}</button>
+    <button class="btn ${p.answered?'answered':'ghost'} sm" data-ans="${i}">${p.answered?'✓ Answered':'Mark answered'}</button>
     ${parentMode?`<button class="mini" data-pedit="${i}" title="Edit">✏️</button><button class="del" data-pdel="${i}" title="Delete">✕</button>`:''}</li>`).join('');
   ul.querySelectorAll('[data-ans]').forEach(b=>b.onclick=()=>{const p=state.prayers[+b.dataset.ans];p.answered=!p.answered;if(p.answered)chime();save();renderPrayers();});
   if(parentMode){
